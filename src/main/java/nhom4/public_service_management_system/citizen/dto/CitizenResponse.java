@@ -1,6 +1,6 @@
 package nhom4.public_service_management_system.citizen.dto;
 
-import nhom4.public_service_management_system.citizen.Gender;
+import nhom4.public_service_management_system.enums.Gender;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;

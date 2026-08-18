@@ -30,7 +30,7 @@ class UserServiceTest {
     private UserRepository userRepository;
 
     private UserMapper userMapper;
-    private UserServiceImpl userService;
+    private UserService userService;
 
     private UserEntity userEntity;
     private UserRequest userRequest;
@@ -38,7 +38,7 @@ class UserServiceTest {
     @BeforeEach
     void setUp() {
         userMapper = new UserMapper();
-        userService = new UserServiceImpl(userRepository, userMapper);
+        userService = new UserService(userRepository, userMapper);
 
         userEntity = new UserEntity();
         userEntity.setId(1L);

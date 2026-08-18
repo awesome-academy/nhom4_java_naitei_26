@@ -18,6 +18,6 @@ public interface DepartmentRepository extends JpaRepository<DepartmentEntity, Lo
 
     Page<DepartmentEntity> findByNameContainingIgnoreCase(String name, Pageable pageable);
 
-    @Query("SELECT d FROM DepartmentEntity d WHERE d.leaderStaffId = :leaderStaffId")
+    @Query("SELECT d FROM DepartmentEntity d WHERE d.leaderStaffId.id = :leaderStaffId")
     Optional<DepartmentEntity> findByLeaderStaffId(@Param("leaderStaffId") Long leaderStaffId);
 }

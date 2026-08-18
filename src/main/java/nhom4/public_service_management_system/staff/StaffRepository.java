@@ -5,4 +5,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface StaffRepository extends JpaRepository<StaffEntity, Long> {
+    boolean existsByUserId(Long userId);
+
+    boolean existsByUserIdAndIdNot(Long userId, Long id);
 }

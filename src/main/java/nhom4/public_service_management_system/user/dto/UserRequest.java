@@ -4,8 +4,8 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import nhom4.public_service_management_system.user.UserRole;
-import nhom4.public_service_management_system.user.UserStatus;
+import nhom4.public_service_management_system.enums.UserRole;
+import nhom4.public_service_management_system.enums.UserStatus;
 
 public record UserRequest(
 

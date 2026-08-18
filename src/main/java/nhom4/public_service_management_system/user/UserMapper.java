@@ -1,5 +1,6 @@
 package nhom4.public_service_management_system.user;
 
+import nhom4.public_service_management_system.enums.UserStatus;
 import org.springframework.stereotype.Component;
 
 import nhom4.public_service_management_system.user.dto.UserRequest;

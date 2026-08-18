@@ -1,12 +1,12 @@
 package nhom4.public_service_management_system.user;
 
+import nhom4.public_service_management_system.exception.ResourceNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import nhom4.public_service_management_system.common.exception.DuplicateResourceException;
-import nhom4.public_service_management_system.common.exception.ResourceNotFoundException;
+import nhom4.public_service_management_system.exception.DuplicateResourceException;
 import nhom4.public_service_management_system.user.dto.UserRequest;
 import nhom4.public_service_management_system.user.dto.UserResponse;
 

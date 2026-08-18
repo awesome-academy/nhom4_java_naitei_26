@@ -10,14 +10,16 @@ import static org.mockito.Mockito.when;
 
 import java.util.Optional;
 
+import nhom4.public_service_management_system.enums.UserRole;
+import nhom4.public_service_management_system.enums.UserStatus;
+import nhom4.public_service_management_system.exception.ResourceNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import nhom4.public_service_management_system.common.exception.DuplicateResourceException;
-import nhom4.public_service_management_system.common.exception.ResourceNotFoundException;
+import nhom4.public_service_management_system.exception.DuplicateResourceException;
 import nhom4.public_service_management_system.user.dto.UserRequest;
 import nhom4.public_service_management_system.user.dto.UserResponse;
 

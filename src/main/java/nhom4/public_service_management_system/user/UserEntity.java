@@ -8,6 +8,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import nhom4.public_service_management_system.enums.UserRole;
+import nhom4.public_service_management_system.enums.UserStatus;
 
 @Entity
 @Table(name = "users")

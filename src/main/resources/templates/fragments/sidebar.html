@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org">
+
+<body>
+
+<aside th:fragment="sidebar"
+       class="sidebar border-end bg-white">
+
+    <div class="p-3">
+
+        <div class="text-uppercase text-muted small fw-bold mb-2">
+            Client
+        </div>
+
+        <div class="nav flex-column">
+
+            <a class="nav-link active"
+               th:href="@{/}">
+                Home
+            </a>
+
+            <a class="nav-link"
+               href="#">
+                Service Catalog
+            </a>
+
+            <a class="nav-link"
+               href="#">
+                My Applications
+            </a>
+
+            <a class="nav-link"
+               href="#">
+                Notifications
+            </a>
+
+            <a class="nav-link"
+               href="#">
+                Citizen Profile
+            </a>
+
+        </div>
+
+    </div>
+
+</aside>
+
+</body>
+</html>

@@ -16,9 +16,21 @@
                     <p class="text-secondary mb-0">Sign in to manage your public service applications.</p>
                 </div>
 
+                <!-- Error message -->
+                <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <span th:text="${errorMessage}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+
+                <!-- Logout message -->
+                <div th:if="${logoutMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+                    <span th:text="${logoutMessage}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+
                 <div class="card shadow-sm border-0">
                     <div class="card-body p-4">
-                        <form class="needs-validation" action="/login" method="post" novalidate>
+                        <form class="needs-validation" th:action="@{/login}" method="post" novalidate>
                             <div class="mb-3">
                                 <label for="email" class="form-label">Email</label>
                                 <input type="email" class="form-control" id="email" name="email"

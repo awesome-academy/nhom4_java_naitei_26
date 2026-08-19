@@ -1,15 +1,12 @@
 package nhom4.public_service_management_system.user;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import nhom4.public_service_management_system.enums.UserRole;
 import nhom4.public_service_management_system.enums.UserStatus;
+import nhom4.public_service_management_system.notification.NotificationEntity;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "users")
@@ -35,6 +32,9 @@ public class UserEntity {
 
     @Column(name = "email_notification_enabled", nullable = false)
     private Boolean emailNotificationEnabled;
+
+    @OneToMany(mappedBy = "notificationEntity", cascade = CascadeType.ALL)
+    private List<NotificationEntity> notificationEntities = new ArrayList<>();
 
     public UserEntity() {
     }

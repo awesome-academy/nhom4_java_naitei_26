@@ -38,6 +38,10 @@ body {
     box-shadow: 0 3px 10px rgba(0, 0, 0, 0.10);
 }
 
+.user-address-cell {
+    max-width: 260px;
+}
+
 footer {
     margin-left: 240px;
 }

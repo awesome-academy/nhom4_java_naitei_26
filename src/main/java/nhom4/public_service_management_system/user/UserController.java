@@ -16,6 +16,9 @@ import org.springframework.web.bind.annotation.RestController;
 import jakarta.validation.Valid;
 import nhom4.public_service_management_system.user.dto.UserRequest;
 import nhom4.public_service_management_system.user.dto.UserResponse;
+import nhom4.public_service_management_system.enums.UserRole;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 @RequestMapping("/api/users")
@@ -44,8 +47,15 @@ public class UserController {
     }
 
     @GetMapping
-    public ResponseEntity<Page<UserResponse>> getAll(Pageable pageable) {
-        return ResponseEntity.ok(userService.findAll(pageable));
+    public ResponseEntity<Page<UserResponse>> getAll(
+            @RequestParam(required = false) UserRole role,
+            Pageable pageable) {
+        return ResponseEntity.ok(userService.findAll(role, pageable));
+    }
+
+    @PatchMapping("/{id}/lock")
+    public ResponseEntity<UserResponse> lock(@PathVariable Long id) {
+        return ResponseEntity.ok(userService.lock(id));
     }
 
     @DeleteMapping("/{id}")

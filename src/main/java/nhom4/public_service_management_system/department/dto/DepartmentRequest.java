@@ -1,6 +1,5 @@
 package nhom4.public_service_management_system.department.dto;
 
-import nhom4.public_service_management_system.staff.StaffEntity;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
@@ -20,6 +19,6 @@ public record DepartmentRequest(
 
         String address,
 
-        StaffEntity leaderStaffId
+        Long leaderStaffId
         ) {
 }

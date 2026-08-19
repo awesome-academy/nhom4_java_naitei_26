@@ -10,13 +10,18 @@ import nhom4.public_service_management_system.exception.ResourceNotFoundExceptio
 import nhom4.public_service_management_system.department.dto.DepartmentRequest;
 import nhom4.public_service_management_system.department.dto.DepartmentResponse;
 
+import nhom4.public_service_management_system.staff.StaffRepository;
+import nhom4.public_service_management_system.staff.StaffEntity;
+
 @Service
 public class DepartmentService {
 
     private final DepartmentRepository departmentRepository;
+    private final StaffRepository staffRepository;
 
-    public DepartmentService(DepartmentRepository departmentRepository) {
+    public DepartmentService(DepartmentRepository departmentRepository, StaffRepository staffRepository) {
         this.departmentRepository = departmentRepository;
+        this.staffRepository = staffRepository;
     }
 
     @Transactional
@@ -25,8 +30,11 @@ public class DepartmentService {
             throw new DuplicateResourceException(
                     "Mã phòng ban '" + request.code() + "' đã tồn tại");
         }
+        StaffEntity leader = staffRepository.findById(request.leaderStaffId())
+                .orElseThrow(() -> new ResourceNotFoundException(
+                    "Không tìm thấy staff id = " + request.leaderStaffId()));
 
-        DepartmentEntity entity = DepartmentMapper.toEntity(request);
+        DepartmentEntity entity = DepartmentMapper.toEntity(request, leader);
         DepartmentEntity saved = departmentRepository.save(entity);
         return DepartmentMapper.toResponse(saved);
     }
@@ -39,8 +47,11 @@ public class DepartmentService {
             throw new DuplicateResourceException(
                     "Mã phòng ban '" + request.code() + "' đã được dùng bởi phòng ban khác");
         }
+        StaffEntity leader = staffRepository.findById(request.leaderStaffId())
+                        .orElseThrow(() -> new ResourceNotFoundException(
+                                "Không tìm thấy staff id = " + request.leaderStaffId()));
 
-        DepartmentMapper.updateEntityFromRequest(entity, request);
+        DepartmentMapper.updateEntityFromRequest(entity, request, leader);
         return DepartmentMapper.toResponse(entity);
     }
 

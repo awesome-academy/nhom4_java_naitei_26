@@ -49,14 +49,14 @@ public class AuthService {
         UserEntity user = new UserEntity();
         user.setEmail(request.email());
         user.setPassword(passwordEncoder.encode(request.password()));
-        user.setRole(UserRole.CITIZEN);
+        user.setRole(UserRole.ROLE_CITIZEN);
         user.setStatus(UserStatus.ACTIVE);
         user.setEmailNotificationEnabled(Boolean.TRUE);
         UserEntity savedUser = userRepository.save(user);
 
         // Tạo Citizen
         CitizenEntity citizen = new CitizenEntity();
-        citizen.setUser(savedUser);
+        citizen.setUserId(savedUser.getId());
         citizen.setName(request.name());
         citizen.setDateOfBirth(request.dateOfBirth());
         citizen.setGender(request.gender());

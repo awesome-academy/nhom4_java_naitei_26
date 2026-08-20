@@ -17,9 +17,9 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.ignoringRequestMatchers("/api/auth/**"))
+                .csrf(csrf -> csrf.ignoringRequestMatchers("/api/register", "/api/login", "/api/logout"))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/login", "/api/auth/**", "/css/**", "/js/**", "/images/**").permitAll()
+                        .requestMatchers("/login", "/api/register", "/api/login", "/css/**", "/js/**", "/images/**", "/error").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("SUPER_ADMIN")
                         .anyRequest().authenticated()
                 )

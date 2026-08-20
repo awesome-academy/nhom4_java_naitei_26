@@ -51,16 +51,38 @@
                             </tr>
                             </thead>
                             <tbody id="logTableBody">
-                            <tr>
-                                <td colspan="6" class="text-center py-4 text-muted">Loading activity logs...</td>
+                            <tr th:if="${logPage.content.empty}">
+                                <td colspan="6" class="text-center py-4 text-muted">No activity logs found.</td>
+                            </tr>
+                            <tr th:each="log : ${logPage.content}">
+                                <td class="ps-3 fw-semibold text-secondary" th:text="'#' + ${log.id}"></td>
+                                <td><small class="text-muted" th:text="${log.createdAt != null ? #temporals.format(log.createdAt, 'HH:mm:ss dd/MM/yyyy') : 'N/A'}"></small></td>
+                                <td><span class="badge bg-primary-subtle text-primary border border-primary-subtle" th:text="${log.action}"></span></td>
+                                <td><small th:text="${log.userEmail != null ? log.userEmail + ' (ID: ' + log.userId + ')' : 'User ID: ' + log.userId}"></small></td>
+                                <td><small class="text-secondary" th:text="${log.description != null ? log.description : '-'}"></small></td>
+                                <td class="text-center">
+                                    <button class="btn btn-outline-danger btn-sm py-0 px-2" th:onclick="'deleteLog(' + ${log.id} + ')'">Delete</button>
+                                </td>
                             </tr>
                             </tbody>
                         </table>
                     </div>
                 </div>
-                <div class="card-footer bg-white border-top-0 py-3">
+                <div class="card-footer bg-white border-top-0 py-3" th:if="${totalPages > 1}">
                     <nav aria-label="Log pagination">
-                        <ul class="pagination pagination-sm justify-content-end mb-0" id="pagination"></ul>
+                        <ul class="pagination pagination-sm justify-content-end mb-0">
+                            <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                                <a class="page-link" th:href="@{/admin/activity-logs(page=${currentPage - 1})}">Previous</a>
+                            </li>
+
+                            <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}" th:classappend="${currentPage == i} ? 'active'">
+                                <a class="page-link" th:href="@{/admin/activity-logs(page=${i})}" th:text="${i + 1}"></a>
+                            </li>
+
+                            <li class="page-item" th:classappend="${currentPage == totalPages - 1} ? 'disabled'">
+                                <a class="page-link" th:href="@{/admin/activity-logs(page=${currentPage + 1})}">Next</a>
+                            </li>
+                        </ul>
                     </nav>
                 </div>
             </div>

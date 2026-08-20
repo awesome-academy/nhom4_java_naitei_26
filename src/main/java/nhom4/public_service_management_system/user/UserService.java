@@ -27,7 +27,7 @@ import org.springframework.util.StringUtils;
 @Transactional
 public class UserService {
 
-    private static final List<UserRole> MANAGED_ROLES = List.of(UserRole.CITIZEN, UserRole.STAFF);
+    private static final List<UserRole> MANAGED_ROLES = List.of(UserRole.ROLE_CITIZEN, UserRole.ROLE_STAFF);
 
     private final UserRepository userRepository;
     private final CitizenRepository citizenRepository;
@@ -238,7 +238,7 @@ public class UserService {
     }
 
     private void saveProfile(Long userId, UserForm form) {
-        if (form.getRole() == UserRole.CITIZEN) {
+        if (form.getRole() == UserRole.ROLE_CITIZEN) {
             CitizenEntity citizen = new CitizenEntity();
             citizen.setUserId(userId);
             citizen.setName(form.getName());
@@ -257,7 +257,7 @@ public class UserService {
     }
 
     private void updateProfile(Long userId, UserForm form) {
-        if (form.getRole() == UserRole.CITIZEN) {
+        if (form.getRole() == UserRole.ROLE_CITIZEN) {
             CitizenEntity citizen = citizenRepository.findByUserId(userId).orElseGet(CitizenEntity::new);
             citizen.setUserId(userId);
             citizen.setName(form.getName());
@@ -296,13 +296,13 @@ public class UserService {
     }
 
     private ProfileData findProfile(UserEntity user) {
-        if (user.getRole() == UserRole.CITIZEN) {
+        if (user.getRole() == UserRole.ROLE_CITIZEN) {
             return citizenRepository.findByUserId(user.getId())
                     .map(citizen -> new ProfileData(citizen.getName(), citizen.getPhone(), citizen.getAddress()))
                     .orElse(ProfileData.empty());
         }
 
-        if (user.getRole() == UserRole.STAFF) {
+        if (user.getRole() == UserRole.ROLE_STAFF) {
             return staffRepository.findByUserId(user.getId())
                     .map(staff -> new ProfileData(staff.getName(), staff.getPhone(), staff.getAddress()))
                     .orElse(ProfileData.empty());

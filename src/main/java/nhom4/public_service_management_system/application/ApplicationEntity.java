@@ -1,21 +1,19 @@
 package nhom4.public_service_management_system.application;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+import nhom4.public_service_management_system.application_document.ApplicationDocumentEntity;
+import nhom4.public_service_management_system.application_history.ApplicationHistoryEntity;
 import nhom4.public_service_management_system.enums.ApplicationStatus;
+import nhom4.public_service_management_system.notification.NotificationEntity;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.UUID;
+import java.util.List;
+
 
 @Entity
 @Table(name = "applications")
@@ -68,7 +66,41 @@ public class ApplicationEntity {
         }
     }
 
+    @OneToMany(mappedBy = "notificationEntity", cascade = CascadeType.ALL)
+    private List<NotificationEntity> notificationEntities = new ArrayList<>();
+
+    @OneToMany(mappedBy = "applicationHistory", cascade = CascadeType.ALL)
+    private List<ApplicationHistoryEntity> applicationHistoryEntities = new ArrayList<>();
+
+    @OneToMany(mappedBy = "applicationDocument", cascade = CascadeType.ALL)
+    private List<ApplicationDocumentEntity> applicationDocumentEntities = new ArrayList<>();
+
     // Getters and Setters
+
+    public List<NotificationEntity> getNotificationEntities() {
+        return notificationEntities;
+    }
+
+    public void setNotificationEntities(List<NotificationEntity> notificationEntities) {
+        this.notificationEntities = notificationEntities;
+    }
+
+    public List<ApplicationHistoryEntity> getApplicationHistoryEntities() {
+        return applicationHistoryEntities;
+    }
+
+    public void setApplicationHistoryEntities(List<ApplicationHistoryEntity> applicationHistoryEntities) {
+        this.applicationHistoryEntities = applicationHistoryEntities;
+    }
+
+    public List<ApplicationDocumentEntity> getApplicationDocumentEntities() {
+        return applicationDocumentEntities;
+    }
+
+    public void setApplicationDocumentEntities(List<ApplicationDocumentEntity> applicationDocumentEntities) {
+        this.applicationDocumentEntities = applicationDocumentEntities;
+    }
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public String getApplicationCode() { return applicationCode; }

@@ -26,4 +26,7 @@ public interface ServiceRepository extends JpaRepository<ServiceEntity, Long> {
 
     @Query("SELECT s FROM ServiceEntity s WHERE s.assignedStaff.id = :staffId")
     List<ServiceEntity> findByAssignedStaffIf(@Param("staffId") Long staffId);
+
+    @Query("SELECT s FROM ServiceEntity s WHERE s.assignedStaff.id = :staffId")
+    List<ServiceEntity> findByAssignedStaffId(@Param("staffId") Long staffId);
 }

@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Staff - Public Service</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" th:href="@{/css/style.css}" />
+  </head>
+
+  <body>
+    <div th:replace="~{fragments/header :: navbar}"></div>
+
+    <div class="d-flex">
+      <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+
+      <main class="main-content flex-grow-1">
+        <div class="container-fluid p-4">
+          <div
+            class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4"
+          >
+            <div>
+              <h1 class="fw-bold mb-1">Staff</h1>
+              <p class="text-muted mb-0">
+                Manage staff assignments by department, service, and application.
+              </p>
+            </div>
+          </div>
+
+          <div
+            th:if="${successMessage}"
+            class="alert alert-success"
+            th:text="${successMessage}"
+          ></div>
+
+          <div class="card dashboard-card mb-4">
+            <div class="card-body">
+              <form
+                class="row g-3 align-items-end"
+                method="get"
+                th:action="@{/admin/staff}"
+              >
+                <div class="col-md-5 col-lg-4">
+                  <label class="form-label" for="departmentId"
+                    >Filter by Department</label
+                  >
+                  <select class="form-select" id="departmentId" name="departmentId">
+                    <option value="">All Departments</option>
+                    <option
+                      th:each="department : ${departments}"
+                      th:value="${department.id}"
+                      th:text="${department.name}"
+                      th:selected="${department.id == selectedDepartmentId}"
+                    ></option>
+                  </select>
+                </div>
+
+                <div class="col-md-auto">
+                  <button type="submit" class="btn btn-outline-primary">
+                    Filter
+                  </button>
+                  <a
+                    th:href="@{/admin/staff}"
+                    class="btn btn-outline-secondary ms-2"
+                    >Reset</a
+                  >
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <div class="card dashboard-card">
+            <div class="table-responsive">
+              <table class="table align-middle mb-0">
+                <thead class="table-light">
+                  <tr>
+                    <th scope="col">ID</th>
+                    <th scope="col">Name</th>
+                    <th scope="col">User ID</th>
+                    <th scope="col">Phone</th>
+                    <th scope="col">Department ID</th>
+                    <th scope="col">Address</th>
+                    <th scope="col" class="text-end">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr th:each="member : ${staff.content}">
+                    <td th:text="${member.id()}"></td>
+                    <td class="fw-semibold" th:text="${member.name()}"></td>
+                    <td th:text="${member.userId()}"></td>
+                    <td th:text="${member.phone()}"></td>
+                    <td>
+                      <span
+                        th:if="${member.departmentId() != null}"
+                        class="badge text-bg-primary"
+                        th:text="${member.departmentId()}"
+                      ></span>
+                      <span
+                        th:if="${member.departmentId() == null}"
+                        class="text-muted"
+                        >Unassigned</span
+                      >
+                    </td>
+                    <td
+                      class="text-truncate user-address-cell"
+                      th:text="${member.address()}"
+                    ></td>
+                    <td class="text-end">
+                      <a
+                        class="btn btn-sm btn-outline-primary"
+                        th:href="@{/admin/staff/{id}(id=${member.id()})}"
+                      >
+                        Manage
+                      </a>
+                    </td>
+                  </tr>
+                  <tr th:if="${staff.empty}">
+                    <td colspan="7" class="text-center text-muted py-4">
+                      No matching staff found.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <nav
+            th:if="${staff.totalPages > 1}"
+            class="mt-4"
+            aria-label="Staff pagination"
+          >
+            <ul class="pagination mb-0">
+              <li
+                class="page-item"
+                th:classappend="${staff.first} ? ' disabled'"
+              >
+                <a
+                  class="page-link"
+                  th:href="@{/admin/staff(page=${staff.number - 1}, size=${staff.size}, departmentId=${selectedDepartmentId})}"
+                >
+                  Previous
+                </a>
+              </li>
+
+              <li
+                class="page-item"
+                th:each="pageNumber : ${#numbers.sequence(0, staff.totalPages - 1)}"
+                th:classappend="${pageNumber == staff.number} ? ' active'"
+              >
+                <a
+                  class="page-link"
+                  th:href="@{/admin/staff(page=${pageNumber}, size=${staff.size}, departmentId=${selectedDepartmentId})}"
+                  th:text="${pageNumber + 1}"
+                >
+                </a>
+              </li>
+
+              <li
+                class="page-item"
+                th:classappend="${staff.last} ? ' disabled'"
+              >
+                <a
+                  class="page-link"
+                  th:href="@{/admin/staff(page=${staff.number + 1}, size=${staff.size}, departmentId=${selectedDepartmentId})}"
+                >
+                  Next
+                </a>
+              </li>
+            </ul>
+          </nav>
+        </div>
+      </main>
+    </div>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>

@@ -58,14 +58,14 @@ class UserServiceTest {
         userEntity.setId(1L);
         userEntity.setEmail("citizen@example.com");
         userEntity.setPassword("123456");
-        userEntity.setRole(UserRole.CITIZEN);
+        userEntity.setRole(UserRole.ROLE_CITIZEN);
         userEntity.setStatus(UserStatus.ACTIVE);
         userEntity.setEmailNotificationEnabled(true);
 
         userRequest = new UserRequest(
                 "citizen@example.com",
                 "123456",
-                UserRole.CITIZEN,
+                UserRole.ROLE_CITIZEN,
                 UserStatus.ACTIVE,
                 true
         );
@@ -81,7 +81,7 @@ class UserServiceTest {
         assertThat(response).isNotNull();
         assertThat(response.id()).isEqualTo(1L);
         assertThat(response.email()).isEqualTo("citizen@example.com");
-        assertThat(response.role()).isEqualTo(UserRole.CITIZEN);
+        assertThat(response.role()).isEqualTo(UserRole.ROLE_CITIZEN);
         verify(userRepository).save(any(UserEntity.class));
     }
 
@@ -142,7 +142,7 @@ class UserServiceTest {
     @Test
     void getDisplayId_shouldReturnSequentialNumber_whenUserExists() {
         when(userRepository.existsById(1L)).thenReturn(true);
-        when(userRepository.countByIdGreaterThanAndRoleIn(1L, List.of(UserRole.CITIZEN, UserRole.STAFF))).thenReturn(2L);
+        when(userRepository.countByIdGreaterThanAndRoleIn(1L, List.of(UserRole.ROLE_CITIZEN, UserRole.ROLE_STAFF))).thenReturn(2L);
 
         long displayId = userService.getDisplayId(1L);
 
@@ -152,13 +152,13 @@ class UserServiceTest {
     @Test
     void findAll_shouldFilterByRole_whenRoleProvided() {
         PageRequest pageable = PageRequest.of(0, 10);
-        when(userRepository.findByRole(UserRole.CITIZEN, pageable))
+        when(userRepository.findByRole(UserRole.ROLE_CITIZEN, pageable))
                 .thenReturn(new PageImpl<>(List.of(userEntity), pageable, 1));
 
-        Page<UserResponse> response = userService.findAll(UserRole.CITIZEN, pageable);
+        Page<UserResponse> response = userService.findAll(UserRole.ROLE_CITIZEN, pageable);
 
         assertThat(response.getContent()).hasSize(1);
-        assertThat(response.getContent().get(0).role()).isEqualTo(UserRole.CITIZEN);
+        assertThat(response.getContent().get(0).role()).isEqualTo(UserRole.ROLE_CITIZEN);
     }
 
     @Test
@@ -166,7 +166,7 @@ class UserServiceTest {
         UserRequest updateRequest = new UserRequest(
                 "citizen@example.com",
                 "newpassword",
-                UserRole.CITIZEN,
+                UserRole.ROLE_CITIZEN,
                 UserStatus.LOCKED,
                 false
         );
@@ -225,7 +225,7 @@ class UserServiceTest {
         form.setName("Nguyen Van A");
         form.setEmail("citizen@example.com");
         form.setPassword("123456");
-        form.setRole(UserRole.CITIZEN);
+        form.setRole(UserRole.ROLE_CITIZEN);
         form.setStatus(UserStatus.ACTIVE);
         form.setEmailNotificationEnabled(true);
         form.setPhone("0901234567");

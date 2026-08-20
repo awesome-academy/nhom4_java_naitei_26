@@ -7,9 +7,16 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import nhom4.public_service_management_system.application.ApplicationEntity;
 import nhom4.public_service_management_system.enums.Gender;
+import nhom4.public_service_management_system.user.UserEntity;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -21,8 +28,9 @@ public class CitizenEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "user_id", unique = true)
-    private Long userId;
+    @OneToOne
+    @JoinColumn(name = "user_id", unique = true)
+    private UserEntity user;
 
     @Column(name = "name", nullable = false)
     private String name;
@@ -49,13 +57,16 @@ public class CitizenEntity {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @OneToMany(mappedBy = "citizen", cascade = jakarta.persistence.CascadeType.ALL, orphanRemoval = true)
+    private List<ApplicationEntity> applications = new ArrayList<>();
+
     public CitizenEntity() {
     }
 
     public CitizenEntity(Long id, Long userId, String name, LocalDate dateOfBirth, Gender gender,
                           String identityNumber, String address, String phone) {
         this.id = id;
-        this.userId = userId;
+        setUserId(userId);
         this.name = name;
         this.dateOfBirth = dateOfBirth;
         this.gender = gender;
@@ -85,11 +96,25 @@ public class CitizenEntity {
     }
 
     public Long getUserId() {
-        return userId;
+        return user == null ? null : user.getId();
     }
 
     public void setUserId(Long userId) {
-        this.userId = userId;
+        if (userId == null) {
+            this.user = null;
+            return;
+        }
+        UserEntity user = new UserEntity();
+        user.setId(userId);
+        this.user = user;
+    }
+
+    public UserEntity getUser() {
+        return user;
+    }
+
+    public void setUser(UserEntity user) {
+        this.user = user;
     }
 
     public String getName() {
@@ -146,5 +171,13 @@ public class CitizenEntity {
 
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
+    }
+
+    public List<ApplicationEntity> getApplications() {
+        return applications;
+    }
+
+    public void setApplications(List<ApplicationEntity> applications) {
+        this.applications = applications;
     }
 }

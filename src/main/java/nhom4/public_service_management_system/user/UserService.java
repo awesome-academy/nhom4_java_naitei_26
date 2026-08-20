@@ -10,6 +10,7 @@ import nhom4.public_service_management_system.exception.DuplicateResourceExcepti
 import nhom4.public_service_management_system.exception.ResourceNotFoundException;
 import nhom4.public_service_management_system.staff.StaffEntity;
 import nhom4.public_service_management_system.staff.StaffRepository;
+import nhom4.public_service_management_system.application.ApplicationMapper;
 import nhom4.public_service_management_system.user.dto.UserForm;
 import nhom4.public_service_management_system.user.dto.UserProfileResponse;
 import nhom4.public_service_management_system.user.dto.UserRequest;
@@ -33,16 +34,19 @@ public class UserService {
     private final CitizenRepository citizenRepository;
     private final StaffRepository staffRepository;
     private final UserMapper userMapper;
+    private final ApplicationMapper applicationMapper;
 
     public UserService(
             UserRepository userRepository,
             CitizenRepository citizenRepository,
             StaffRepository staffRepository,
-            UserMapper userMapper) {
+            UserMapper userMapper,
+            ApplicationMapper applicationMapper) {
         this.userRepository = userRepository;
         this.citizenRepository = citizenRepository;
         this.staffRepository = staffRepository;
         this.userMapper = userMapper;
+        this.applicationMapper = applicationMapper;
     }
 
     public UserResponse create(UserRequest request) {
@@ -72,6 +76,11 @@ public class UserService {
         validateManagedRole(form.getRole());
         validateUniqueEmail(form.getEmail(), null);
         validateUniquePhone(form.getPhone(), null);
+        if (form.getRole() == UserRole.CITIZEN) {
+            citizenRepository.findByIdentityNumber(form.getIdentityNumber()).ifPresent(existing -> {
+                throw new DuplicateResourceException("So CCCD/CMND da duoc su dung: " + form.getIdentityNumber());
+            });
+        }
 
         UserEntity entity = userMapper.toEntity(form.toRequest());
         UserEntity saved = userRepository.save(entity);
@@ -115,7 +124,8 @@ public class UserService {
         if (!userRepository.existsById(id)) {
             throw new ResourceNotFoundException("Khong tim thay user voi id: " + id);
         }
-        return userRepository.countByIdGreaterThanAndRoleIn(id, MANAGED_ROLES) + 1;
+        return userRepository.countByIdGreaterThanAndRoleInAndStatusNot(
+            id, MANAGED_ROLES, UserStatus.DELETED) + 1;
     }
 
     @Transactional(readOnly = true)
@@ -140,17 +150,18 @@ public class UserService {
         if (role == null) {
             return findAll(pageable);
         }
-        return userRepository.findByRole(role, pageable).map(userMapper::toResponse);
+        return userRepository.findByRoleAndStatusNot(role, UserStatus.DELETED, pageable)
+            .map(userMapper::toResponse);
     }
 
     @Transactional(readOnly = true)
     public Page<UserProfileResponse> findProfiles(UserRole role, Pageable pageable) {
         Page<UserEntity> users;
         if (role == null) {
-            users = userRepository.findByRoleIn(MANAGED_ROLES, pageable);
+            users = userRepository.findByRoleInAndStatusNot(MANAGED_ROLES, UserStatus.DELETED, pageable);
         } else {
             validateManagedRole(role);
-            users = userRepository.findByRole(role, pageable);
+            users = userRepository.findByRoleAndStatusNot(role, UserStatus.DELETED, pageable);
         }
 
         List<UserProfileResponse> content = users.getContent().stream()
@@ -176,11 +187,10 @@ public class UserService {
     }
 
     public void delete(Long id) {
-        if (!userRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Khong tim thay user voi id: " + id);
-        }
-        deleteProfile(id);
-        userRepository.deleteById(id);
+        UserEntity entity = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Khong tim thay user voi id: " + id));
+        entity.setStatus(UserStatus.DELETED);
+        userRepository.save(entity);
     }
 
     private UserEntity findEntityOrThrow(Long id) {
@@ -198,7 +208,8 @@ public class UserService {
                 1,
                 Sort.by("id").descending()
         );
-        Page<UserEntity> users = userRepository.findByRoleIn(MANAGED_ROLES, pageable);
+        Page<UserEntity> users = userRepository.findByRoleInAndStatusNot(
+            MANAGED_ROLES, UserStatus.DELETED, pageable);
         if (users.isEmpty()) {
             throw new ResourceNotFoundException("Khong tim thay user voi id hien thi: " + displayId);
         }
@@ -242,6 +253,9 @@ public class UserService {
             CitizenEntity citizen = new CitizenEntity();
             citizen.setUserId(userId);
             citizen.setName(form.getName());
+            citizen.setDateOfBirth(form.getDateOfBirth());
+            citizen.setGender(form.getGender());
+            citizen.setIdentityNumber(form.getIdentityNumber());
             citizen.setPhone(form.getPhone());
             citizen.setAddress(form.getAddress());
             citizenRepository.save(citizen);
@@ -261,6 +275,8 @@ public class UserService {
             CitizenEntity citizen = citizenRepository.findByUserId(userId).orElseGet(CitizenEntity::new);
             citizen.setUserId(userId);
             citizen.setName(form.getName());
+            citizen.setDateOfBirth(form.getDateOfBirth());
+            citizen.setGender(form.getGender());
             citizen.setPhone(form.getPhone());
             citizen.setAddress(form.getAddress());
             citizenRepository.save(citizen);
@@ -276,7 +292,7 @@ public class UserService {
     }
 
     private void deleteProfile(Long userId) {
-        citizenRepository.deleteByUserId(userId);
+        citizenRepository.findByUserId(userId).ifPresent(citizenRepository::delete);
         staffRepository.deleteByUserId(userId);
     }
 
@@ -290,30 +306,41 @@ public class UserService {
                 user.getRole(),
                 profile.phone(),
                 profile.address(),
+                profile.dateOfBirth(),
+                profile.gender(),
+                profile.identityNumber(),
                 user.getStatus(),
-                user.getEmailNotificationEnabled()
+                user.getEmailNotificationEnabled(),
+                profile.applications()
         );
     }
 
     private ProfileData findProfile(UserEntity user) {
         if (user.getRole() == UserRole.CITIZEN) {
             return citizenRepository.findByUserId(user.getId())
-                    .map(citizen -> new ProfileData(citizen.getName(), citizen.getPhone(), citizen.getAddress()))
+                    .map(citizen -> new ProfileData(citizen.getName(), citizen.getPhone(), citizen.getAddress(),
+                            citizen.getDateOfBirth(), citizen.getGender(), citizen.getIdentityNumber(),
+                            citizen.getApplications().stream().map(applicationMapper::toResponse).toList()))
                     .orElse(ProfileData.empty());
         }
 
         if (user.getRole() == UserRole.STAFF) {
             return staffRepository.findByUserId(user.getId())
-                    .map(staff -> new ProfileData(staff.getName(), staff.getPhone(), staff.getAddress()))
+                        .map(staff -> new ProfileData(staff.getName(), staff.getPhone(), staff.getAddress(),
+                                null, null, null, java.util.List.of()))
                     .orElse(ProfileData.empty());
         }
 
         return ProfileData.empty();
     }
 
-    private record ProfileData(String name, String phone, String address) {
+    private record ProfileData(String name, String phone, String address,
+                               java.time.LocalDate dateOfBirth,
+                               nhom4.public_service_management_system.enums.Gender gender,
+                               String identityNumber,
+                               java.util.List<nhom4.public_service_management_system.application.dto.ApplicationResponse> applications) {
         private static ProfileData empty() {
-            return new ProfileData("", "", "");
+            return new ProfileData("", "", "", null, null, null, java.util.List.of());
         }
     }
 }

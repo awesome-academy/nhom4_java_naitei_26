@@ -1,11 +1,19 @@
 package nhom4.public_service_management_system.citizen;
 
+import nhom4.public_service_management_system.application.ApplicationMapper;
 import nhom4.public_service_management_system.citizen.dto.CitizenRequest;
 import nhom4.public_service_management_system.citizen.dto.CitizenResponse;
+import nhom4.public_service_management_system.citizen.dto.CitizenUpdateRequest;
 import org.springframework.stereotype.Component;
 
 @Component
 public class CitizenMapper {
+
+    private final ApplicationMapper applicationMapper;
+
+    public CitizenMapper(ApplicationMapper applicationMapper) {
+        this.applicationMapper = applicationMapper;
+    }
 
     public CitizenEntity toEntity(CitizenRequest request) {
         if (request == null) {
@@ -13,6 +21,7 @@ public class CitizenMapper {
         }
         CitizenEntity entity = new CitizenEntity();
         applyRequest(entity, request);
+        entity.setIdentityNumber(request.identityNumber());
         return entity;
     }
 
@@ -24,7 +33,17 @@ public class CitizenMapper {
         entity.setName(request.name());
         entity.setDateOfBirth(request.dateOfBirth());
         entity.setGender(request.gender());
-        entity.setIdentityNumber(request.identityNumber());
+        entity.setAddress(request.address());
+        entity.setPhone(request.phone());
+    }
+
+    public void applyUpdateRequest(CitizenEntity entity, CitizenUpdateRequest request) {
+        if (entity == null || request == null) {
+            return;
+        }
+        entity.setName(request.name());
+        entity.setDateOfBirth(request.dateOfBirth());
+        entity.setGender(request.gender());
         entity.setAddress(request.address());
         entity.setPhone(request.phone());
     }
@@ -43,7 +62,10 @@ public class CitizenMapper {
                 entity.getAddress(),
                 entity.getPhone(),
                 entity.getCreatedAt(),
-                entity.getUpdatedAt()
+                entity.getUpdatedAt(),
+                entity.getApplications().stream()
+                        .map(applicationMapper::toResponse)
+                        .toList()
         );
     }
 }

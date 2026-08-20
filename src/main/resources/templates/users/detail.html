@@ -69,6 +69,24 @@
                   th:text="${#strings.isEmpty(user.address())} ? 'None' : ${user.address()}"
                 ></dd>
 
+                <dt class="col-sm-3 text-muted">Date of birth</dt>
+                <dd
+                  class="col-sm-9"
+                  th:text="${user.dateOfBirth() != null ? user.dateOfBirth() : 'None'}"
+                ></dd>
+
+                <dt class="col-sm-3 text-muted">Gender</dt>
+                <dd
+                  class="col-sm-9"
+                  th:text="${user.gender() != null ? user.gender() : 'None'}"
+                ></dd>
+
+                <dt class="col-sm-3 text-muted">Identity number</dt>
+                <dd
+                  class="col-sm-9"
+                  th:text="${user.identityNumber() != null ? user.identityNumber() : 'None'}"
+                ></dd>
+
                 <dt class="col-sm-3 text-muted">Status</dt>
                 <dd class="col-sm-9">
                   <span
@@ -85,6 +103,39 @@
                   th:text="${user.emailNotificationEnabled()} ? 'Enabled' : 'Disabled'"
                 ></dd>
               </dl>
+            </div>
+          </div>
+
+          <div class="card dashboard-card mt-4">
+            <div class="card-body">
+              <h2 class="h5 mb-3">Submitted applications</h2>
+              <div
+                th:if="${#lists.isEmpty(user.applications())}"
+                class="text-muted"
+              >
+                No applications submitted.
+              </div>
+              <div
+                th:unless="${#lists.isEmpty(user.applications())}"
+                class="table-responsive"
+              >
+                <table class="table align-middle mb-0">
+                  <thead>
+                    <tr>
+                      <th>Code</th>
+                      <th>Status</th>
+                      <th>Submitted at</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr th:each="application : ${user.applications()}">
+                      <td th:text="${application.applicationCode}"></td>
+                      <td th:text="${application.status}"></td>
+                      <td th:text="${application.submittedAt}"></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
 

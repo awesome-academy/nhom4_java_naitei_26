@@ -20,6 +20,9 @@ public class ApplicationHistoryEntity {
 
     private ApplicationStatus oldStatus;
     private ApplicationStatus newStatus;
+
+    @ManyToOne
+    @JoinColumn(name = "changed_by")
     private UserEntity changedBy;
     private LocalDateTime changedAt;
     private String note;

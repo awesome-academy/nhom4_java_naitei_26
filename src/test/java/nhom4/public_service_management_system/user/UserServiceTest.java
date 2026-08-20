@@ -3,7 +3,6 @@ package nhom4.public_service_management_system.user;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -13,6 +12,7 @@ import java.util.Optional;
 
 import nhom4.public_service_management_system.citizen.CitizenEntity;
 import nhom4.public_service_management_system.citizen.CitizenRepository;
+import nhom4.public_service_management_system.application.ApplicationMapper;
 import nhom4.public_service_management_system.enums.UserRole;
 import nhom4.public_service_management_system.enums.UserStatus;
 import nhom4.public_service_management_system.exception.ResourceNotFoundException;
@@ -26,6 +26,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import static org.mockito.Mockito.lenient;
 
 import nhom4.public_service_management_system.exception.DuplicateResourceException;
 import nhom4.public_service_management_system.user.dto.UserRequest;
@@ -43,6 +45,9 @@ class UserServiceTest {
     @Mock
     private StaffRepository staffRepository;
 
+    @Mock
+    private PasswordEncoder passwordEncoder;
+
     private UserMapper userMapper;
     private UserService userService;
 
@@ -51,8 +56,10 @@ class UserServiceTest {
 
     @BeforeEach
     void setUp() {
-        userMapper = new UserMapper();
-        userService = new UserService(userRepository, citizenRepository, staffRepository, userMapper);
+        lenient().when(passwordEncoder.encode(any())).thenAnswer(invocation -> invocation.getArgument(0));
+        userMapper = new UserMapper(passwordEncoder);
+        userService = new UserService(userRepository, citizenRepository, staffRepository,
+            userMapper, new ApplicationMapper());
 
         userEntity = new UserEntity();
         userEntity.setId(1L);
@@ -142,7 +149,8 @@ class UserServiceTest {
     @Test
     void getDisplayId_shouldReturnSequentialNumber_whenUserExists() {
         when(userRepository.existsById(1L)).thenReturn(true);
-        when(userRepository.countByIdGreaterThanAndRoleIn(1L, List.of(UserRole.CITIZEN, UserRole.STAFF))).thenReturn(2L);
+        when(userRepository.countByIdGreaterThanAndRoleInAndStatusNot(
+            1L, List.of(UserRole.CITIZEN, UserRole.STAFF), UserStatus.DELETED)).thenReturn(2L);
 
         long displayId = userService.getDisplayId(1L);
 
@@ -152,7 +160,7 @@ class UserServiceTest {
     @Test
     void findAll_shouldFilterByRole_whenRoleProvided() {
         PageRequest pageable = PageRequest.of(0, 10);
-        when(userRepository.findByRole(UserRole.CITIZEN, pageable))
+        when(userRepository.findByRoleAndStatusNot(UserRole.CITIZEN, UserStatus.DELETED, pageable))
                 .thenReturn(new PageImpl<>(List.of(userEntity), pageable, 1));
 
         Page<UserResponse> response = userService.findAll(UserRole.CITIZEN, pageable);
@@ -190,22 +198,25 @@ class UserServiceTest {
     }
 
     @Test
-    void delete_shouldRemoveUser_whenUserExists() {
-        when(userRepository.existsById(1L)).thenReturn(true);
+    void delete_shouldSoftDeleteUser_whenUserExists() {
+        when(userRepository.findById(1L)).thenReturn(Optional.of(userEntity));
+        when(userRepository.save(any(UserEntity.class))).thenReturn(userEntity);
 
         userService.delete(1L);
 
-        verify(userRepository).deleteById(1L);
+        assertThat(userEntity.getStatus()).isEqualTo(UserStatus.DELETED);
+        verify(userRepository).save(userEntity);
+        verify(userRepository, never()).deleteById(1L);
     }
 
     @Test
     void delete_shouldThrowException_whenUserNotFound() {
-        when(userRepository.existsById(99L)).thenReturn(false);
+        when(userRepository.findById(99L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> userService.delete(99L))
                 .isInstanceOf(ResourceNotFoundException.class);
 
-        verify(userRepository, never()).deleteById(anyLong());
+        verify(userRepository, never()).save(any(UserEntity.class));
     }
 
     @Test

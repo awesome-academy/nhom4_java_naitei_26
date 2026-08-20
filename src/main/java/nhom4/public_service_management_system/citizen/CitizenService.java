@@ -2,6 +2,7 @@ package nhom4.public_service_management_system.citizen;
 
 import nhom4.public_service_management_system.citizen.dto.CitizenRequest;
 import nhom4.public_service_management_system.citizen.dto.CitizenResponse;
+import nhom4.public_service_management_system.citizen.dto.CitizenUpdateRequest;
 import nhom4.public_service_management_system.exception.DuplicateResourceException;
 import nhom4.public_service_management_system.exception.ResourceNotFoundException;
 import org.springframework.data.domain.Page;
@@ -52,10 +53,17 @@ public class CitizenService {
         return citizenRepository.findByNameContainingIgnoreCase(name, pageable).map(citizenMapper::toResponse);
     }
 
+    public CitizenResponse update(Long id, CitizenUpdateRequest request) {
+        CitizenEntity entity = findEntityOrThrow(id);
+
+        citizenMapper.applyUpdateRequest(entity, request);
+        CitizenEntity saved = citizenRepository.save(entity);
+        return citizenMapper.toResponse(saved);
+    }
+
     public CitizenResponse update(Long id, CitizenRequest request) {
         CitizenEntity entity = findEntityOrThrow(id);
 
-        validateUniqueIdentityNumber(request.identityNumber(), id);
         validateUniqueUserId(request.userId(), id);
 
         citizenMapper.applyRequest(entity, request);

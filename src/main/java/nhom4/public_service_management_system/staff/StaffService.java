@@ -53,6 +53,25 @@ public class StaffService {
         return staffRepository.findAll(pageable).map(staffMapper::toResponse);
     }
 
+    @Transactional(readOnly = true)
+    public Page<StaffResponse> getAllByDepartmentId(Long departmentId, Pageable pageable) {
+        return staffRepository.findByDepartmentId(departmentId, pageable).map(staffMapper::toResponse);
+    }
+
+    public StaffResponse assignDepartment(Long id, Long departmentId) {
+        StaffEntity entity = findEntityById(id);
+        entity.setDepartmentId(departmentId);
+        StaffEntity saved = staffRepository.save(entity);
+        return staffMapper.toResponse(saved);
+    }
+
+    public StaffResponse removeDepartment(Long id) {
+        StaffEntity entity = findEntityById(id);
+        entity.setDepartmentId(null);
+        StaffEntity saved = staffRepository.save(entity);
+        return staffMapper.toResponse(saved);
+    }
+
     public void delete(Long id) {
         if (!staffRepository.existsById(id)) {
             throw new ResourceNotFoundException("Staff not found with id: " + id);

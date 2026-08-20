@@ -1,26 +1,23 @@
 <!doctype html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-  <body>
-    <aside th:fragment="sidebar" class="sidebar border-end bg-white">
-      <div class="p-3">
-        <div class="text-uppercase text-muted small fw-bold mb-2">Client</div>
+<body>
+<aside th:fragment="sidebar" class="sidebar border-end bg-white">
+  <div class="p-3">
+    <div class="text-uppercase text-muted small fw-bold mb-2">Client</div>
 
-        <div class="nav flex-column">
-          <a class="nav-link active" th:href="@{/}"> Home </a>
+    <div class="nav flex-column">
+      <a class="nav-link active" th:href="@{/static}"> Home </a>
+      <a class="nav-link" href="#"> Service Catalog </a>
+      <a class="nav-link" href="#"> My Applications </a>
+      <a class="nav-link" href="#"> Notifications </a>
+      <a class="nav-link" href="#"> Citizen Profile </a>
 
-          <a class="nav-link" href="#"> Service Catalog </a>
+      <div class="text-uppercase text-muted small fw-bold mb-2 mt-4">Admin</div>
 
-          <a class="nav-link" href="#"> My Applications </a>
-
-          <a class="nav-link" href="#"> Notifications </a>
-
-          <a class="nav-link" href="#"> Citizen Profile </a>
-
-          <div class="text-uppercase text-muted small fw-bold mb-2 mt-4">Admin</div>
-
-          <a class="nav-link" th:href="@{/admin/users}"> Users </a>
-        </div>
-      </div>
-    </aside>
-  </body>
+      <a class="nav-link" th:href="@{/admin/users}"> Users </a>
+      <a class="nav-link" th:href="@{/admin/activity-logs}"> Activity Logs </a>
+    </div>
+  </div>
+</aside>
+</body>
 </html>

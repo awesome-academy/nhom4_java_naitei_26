@@ -33,7 +33,7 @@ public class UserEntity {
     @Column(name = "email_notification_enabled", nullable = false)
     private Boolean emailNotificationEnabled;
 
-    @OneToMany(mappedBy = "notificationEntity", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<NotificationEntity> notificationEntities = new ArrayList<>();
 
     public UserEntity() {

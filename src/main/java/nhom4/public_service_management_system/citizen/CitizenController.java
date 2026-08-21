@@ -3,6 +3,7 @@ package nhom4.public_service_management_system.citizen;
 import jakarta.validation.Valid;
 import nhom4.public_service_management_system.citizen.dto.CitizenRequest;
 import nhom4.public_service_management_system.citizen.dto.CitizenResponse;
+import nhom4.public_service_management_system.citizen.dto.CitizenUpdateRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -49,7 +50,8 @@ public class CitizenController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<CitizenResponse> update(@PathVariable Long id, @Valid @RequestBody CitizenRequest request) {
+    public ResponseEntity<CitizenResponse> update(@PathVariable Long id,
+                                                  @Valid @RequestBody CitizenUpdateRequest request) {
         return ResponseEntity.ok(citizenService.update(id, request));
     }
 

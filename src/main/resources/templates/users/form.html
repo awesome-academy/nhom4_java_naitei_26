@@ -36,6 +36,11 @@
                 th:object="${userForm}"
                 th:action="${mode == 'create'} ? @{/admin/users} : @{/admin/users/{id}(id=${userDisplayId})}"
               >
+                <div
+                  class="alert alert-danger"
+                  th:if="${globalError != null}"
+                  th:text="${globalError}"
+                ></div>
                 <div class="row g-3">
                   <div class="col-md-6">
                     <label class="form-label" for="name">Name</label>
@@ -119,6 +124,63 @@
                       th:field="*{phone}"
                     />
                     <div class="invalid-feedback" th:errors="*{phone}"></div>
+                  </div>
+
+                  <div class="col-md-6">
+                    <label class="form-label" for="dateOfBirth"
+                      >Date of birth</label
+                    >
+                    <input
+                      class="form-control"
+                      id="dateOfBirth"
+                      type="date"
+                      th:field="*{dateOfBirth}"
+                    />
+                    <div
+                      class="invalid-feedback"
+                      th:errors="*{dateOfBirth}"
+                    ></div>
+                  </div>
+
+                  <div class="col-md-6">
+                    <label class="form-label" for="gender">Gender</label>
+                    <select
+                      class="form-select"
+                      id="gender"
+                      th:field="*{gender}"
+                    >
+                      <option value="">Select gender</option>
+                      <option value="MALE">Male</option>
+                      <option value="FEMALE">Female</option>
+                    </select>
+                  </div>
+
+                  <div class="col-md-6">
+                    <label class="form-label" for="identityNumber"
+                      >Identity number</label
+                    >
+                    <input
+                      class="form-control"
+                      id="identityNumber"
+                      type="text"
+                      inputmode="numeric"
+                      maxlength="12"
+                      placeholder="012345678901"
+                      th:field="*{identityNumber}"
+                      th:readonly="${mode == 'edit'}"
+                    />
+                    <div class="form-text">
+                      Enter exactly 9 or 12 digits, for example:
+                      <strong>012345678901</strong>. Do not include spaces or
+                      symbols.
+                    </div>
+                    <div class="form-text" th:if="${mode == 'edit'}">
+                      Identity number cannot be changed.
+                    </div>
+                    <div
+                      class="invalid-feedback"
+                      th:errors="*{identityNumber}"
+                    ></div>
                   </div>
 
                   <div class="col-12">

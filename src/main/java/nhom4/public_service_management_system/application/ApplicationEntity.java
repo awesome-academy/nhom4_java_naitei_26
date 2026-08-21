@@ -3,6 +3,7 @@ package nhom4.public_service_management_system.application;
 import jakarta.persistence.*;
 import nhom4.public_service_management_system.application_document.ApplicationDocumentEntity;
 import nhom4.public_service_management_system.application_history.ApplicationHistoryEntity;
+import nhom4.public_service_management_system.citizen.CitizenEntity;
 import nhom4.public_service_management_system.enums.ApplicationStatus;
 import nhom4.public_service_management_system.notification.NotificationEntity;
 import org.hibernate.annotations.JdbcTypeCode;
@@ -26,8 +27,9 @@ public class ApplicationEntity {
     @Column(name = "application_code", unique = true, length = 50, nullable = false)
     private String applicationCode;
 
-    @Column(name = "citizen_id", nullable = false)
-    private Long citizenId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "citizen_id", nullable = false)
+    private CitizenEntity citizen;
 
     @Column(name = "service_id", nullable = false)
     private Long serviceId;
@@ -66,13 +68,13 @@ public class ApplicationEntity {
         }
     }
 
-    @OneToMany(mappedBy = "notificationEntity", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "application", cascade = CascadeType.ALL)
     private List<NotificationEntity> notificationEntities = new ArrayList<>();
 
-    @OneToMany(mappedBy = "applicationHistory", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "application", cascade = CascadeType.ALL)
     private List<ApplicationHistoryEntity> applicationHistoryEntities = new ArrayList<>();
 
-    @OneToMany(mappedBy = "applicationDocument", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "application", cascade = CascadeType.ALL)
     private List<ApplicationDocumentEntity> applicationDocumentEntities = new ArrayList<>();
 
     // Getters and Setters
@@ -105,8 +107,18 @@ public class ApplicationEntity {
     public void setId(Long id) { this.id = id; }
     public String getApplicationCode() { return applicationCode; }
     public void setApplicationCode(String applicationCode) { this.applicationCode = applicationCode; }
-    public Long getCitizenId() { return citizenId; }
-    public void setCitizenId(Long citizenId) { this.citizenId = citizenId; }
+    public CitizenEntity getCitizen() { return citizen; }
+    public void setCitizen(CitizenEntity citizen) { this.citizen = citizen; }
+    public Long getCitizenId() { return citizen == null ? null : citizen.getId(); }
+    public void setCitizenId(Long citizenId) {
+        if (citizenId == null) {
+            this.citizen = null;
+            return;
+        }
+        CitizenEntity citizen = new CitizenEntity();
+        citizen.setId(citizenId);
+        this.citizen = citizen;
+    }
     public Long getServiceId() { return serviceId; }
     public void setServiceId(Long serviceId) { this.serviceId = serviceId; }
     public Long getAssignedStaffId() { return assignedStaffId; }

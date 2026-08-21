@@ -52,8 +52,8 @@ public class UserPageController {
     @GetMapping("/new")
     public String createForm(Model model) {
         model.addAttribute("userForm", new UserForm());
-        model.addAttribute("roles", UserRole.values());
-        model.addAttribute("statuses", UserStatus.values());
+        model.addAttribute("roles", MANAGED_ROLES);
+            model.addAttribute("statuses", List.of(UserStatus.ACTIVE, UserStatus.LOCKED));
         model.addAttribute("mode", "create");
         return "users/form";
     }
@@ -65,6 +65,7 @@ public class UserPageController {
             Model model,
             RedirectAttributes redirectAttributes) {
         validatePasswordForCreate(userForm, bindingResult);
+        validateCitizenIdentity(userForm, bindingResult);
         if (bindingResult.hasErrors()) {
             prepareFormModel(model, "create");
             return "users/form";
@@ -76,6 +77,10 @@ public class UserPageController {
             return "redirect:/admin/users/" + created.displayId();
         } catch (DuplicateResourceException ex) {
             rejectDuplicate(bindingResult, ex);
+            prepareFormModel(model, "create");
+            return "users/form";
+        } catch (IllegalArgumentException ex) {
+            model.addAttribute("globalError", ex.getMessage());
             prepareFormModel(model, "create");
             return "users/form";
         }
@@ -92,7 +97,7 @@ public class UserPageController {
         model.addAttribute("userDisplayId", displayId);
         model.addAttribute("userForm", UserForm.from(userService.findProfileByDisplayId(displayId)));
         model.addAttribute("roles", MANAGED_ROLES);
-        model.addAttribute("statuses", UserStatus.values());
+            model.addAttribute("statuses", List.of(UserStatus.ACTIVE, UserStatus.LOCKED));
         model.addAttribute("mode", "edit");
         return "users/form";
     }
@@ -104,6 +109,7 @@ public class UserPageController {
             BindingResult bindingResult,
             Model model,
             RedirectAttributes redirectAttributes) {
+        validateCitizenIdentity(userForm, bindingResult);
         if (bindingResult.hasErrors()) {
             model.addAttribute("userDisplayId", displayId);
             prepareFormModel(model, "edit");
@@ -116,6 +122,11 @@ public class UserPageController {
             return "redirect:/admin/users/" + displayId;
         } catch (DuplicateResourceException ex) {
             rejectDuplicate(bindingResult, ex);
+            model.addAttribute("userDisplayId", displayId);
+            prepareFormModel(model, "edit");
+            return "users/form";
+        } catch (IllegalArgumentException ex) {
+            model.addAttribute("globalError", ex.getMessage());
             model.addAttribute("userDisplayId", displayId);
             prepareFormModel(model, "edit");
             return "users/form";
@@ -138,13 +149,17 @@ public class UserPageController {
 
     private void prepareFormModel(Model model, String mode) {
         model.addAttribute("roles", MANAGED_ROLES);
-        model.addAttribute("statuses", UserStatus.values());
+            model.addAttribute("statuses", List.of(UserStatus.ACTIVE, UserStatus.LOCKED));
         model.addAttribute("mode", mode);
     }
 
     private void rejectDuplicate(BindingResult bindingResult, DuplicateResourceException ex) {
         if (ex.getMessage().toLowerCase().contains("email")) {
             bindingResult.rejectValue("email", "duplicate", ex.getMessage());
+            return;
+        }
+        if (ex.getMessage().toLowerCase().contains("cccd")) {
+            bindingResult.rejectValue("identityNumber", "duplicate", ex.getMessage());
             return;
         }
         bindingResult.rejectValue("phone", "duplicate", ex.getMessage());
@@ -156,6 +171,13 @@ public class UserPageController {
             bindingResult.rejectValue("password", "required", "Mat khau khong duoc de trong");
         } else if (password.length() < 6) {
             bindingResult.rejectValue("password", "size", "Mat khau phai co it nhat 6 ky tu");
+        }
+    }
+
+    private void validateCitizenIdentity(UserForm userForm, BindingResult bindingResult) {
+        if (userForm.getRole() == UserRole.CITIZEN
+                && (userForm.getIdentityNumber() == null || userForm.getIdentityNumber().isBlank())) {
+            bindingResult.rejectValue("identityNumber", "required", "So CCCD/CMND khong duoc de trong");
         }
     }
 }

@@ -11,7 +11,6 @@ public class ApplicationMapper {
         if (request == null) return null;
 
         ApplicationEntity entity = new ApplicationEntity();
-        entity.setCitizenId(request.getCitizenId());
         entity.setServiceId(request.getServiceId());
         entity.setData(request.getData());
 

@@ -3,7 +3,6 @@ package nhom4.public_service_management_system.application;
 import nhom4.public_service_management_system.application.dto.ApplicationRequest;
 import nhom4.public_service_management_system.application.dto.ApplicationResponse;
 import nhom4.public_service_management_system.enums.ApplicationStatus;
-import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

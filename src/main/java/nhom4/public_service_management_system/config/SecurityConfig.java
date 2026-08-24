@@ -10,6 +10,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.MediaType;
+
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
@@ -17,11 +20,31 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.ignoringRequestMatchers("/api/register", "/api/login", "/api/logout"))
+                .csrf(csrf -> csrf.ignoringRequestMatchers("/api/**"))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/login", "/api/register", "/api/login", "/css/**", "/js/**", "/images/**", "/error").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("SUPER_ADMIN")
                         .anyRequest().authenticated()
+                )
+                .exceptionHandling(exceptions -> exceptions
+                        .defaultAuthenticationEntryPointFor(
+                                (request, response, authException) -> {
+                                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                                    response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+                                    response.setCharacterEncoding("UTF-8");
+                                    response.getWriter().write("{\"status\":401,\"message\":\"Unauthorized\"}");
+                                },
+                                request -> request.getServletPath().startsWith("/api")
+                        )
+                        .defaultAccessDeniedHandlerFor(
+                                (request, response, accessDeniedException) -> {
+                                    response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                                    response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+                                    response.setCharacterEncoding("UTF-8");
+                                    response.getWriter().write("{\"status\":403,\"message\":\"Access Denied\"}");
+                                },
+                                request -> request.getServletPath().startsWith("/api")
+                        )
                 )
                 .formLogin(form -> form
                         .loginPage("/login")

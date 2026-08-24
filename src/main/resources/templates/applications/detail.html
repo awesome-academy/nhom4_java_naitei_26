@@ -1,0 +1,413 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title th:text="'Chi tiết hồ sơ ' + ${application.applicationCode} + ' - Public Service'">Chi tiết hồ sơ</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <link rel="stylesheet" th:href="@{/css/style.css}" />
+</head>
+
+<body>
+<div th:replace="~{fragments/header :: navbar}"></div>
+
+<div class="d-flex">
+    <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+
+    <main class="main-content flex-grow-1">
+        <div class="container-fluid p-4">
+            <!-- Breadcrumbs -->
+            <nav aria-label="breadcrumb" class="mb-3">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a th:href="@{/admin/applications}" class="text-decoration-none">Hồ sơ</a></li>
+                    <li class="breadcrumb-item active" aria-current="page" th:text="${application.applicationCode}">APP-123456</li>
+                </ol>
+            </nav>
+
+            <!-- Page Header with Quick Actions -->
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4 pb-2 border-bottom">
+                <div>
+                    <div class="d-flex align-items-center gap-2">
+                        <h1 class="fw-bold mb-0" th:text="${application.applicationCode}">APP-123456</h1>
+                        <span class="badge fs-6" th:classappend="${application.statusBadgeClass}" th:text="${application.statusDisplayName}">Chờ tiếp nhận</span>
+                    </div>
+                    <p class="text-muted mb-0 small mt-1">
+                        Ngày nộp: <strong th:if="${application.submittedAt}" th:text="${#temporals.format(application.submittedAt, 'dd/MM/yyyy HH:mm')}">-</strong>
+                    </p>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="d-flex flex-wrap gap-2">
+                    <!-- Processing Button (if RECEIVED) -->
+                    <form th:if="${application.status.name() == 'RECEIVED'}" method="post"
+                          th:action="@{/admin/applications/{id}/status(id=${application.id})}">
+                        <input type="hidden" name="status" value="PROCESSING" />
+                        <button type="submit" class="btn btn-outline-primary">
+                            <i class="bi bi-play-circle me-1"></i> Tiếp nhận xử lý
+                        </button>
+                    </form>
+
+                    <!-- Approve Modal Trigger -->
+                    <button th:if="${application.status.name() != 'APPROVED'}" type="button"
+                            class="btn btn-success" data-bs-toggle="modal" data-bs-target="#approveModal">
+                        <i class="bi bi-check-circle me-1"></i> Phê duyệt
+                    </button>
+
+                    <!-- Reject Modal Trigger -->
+                    <button th:if="${application.status.name() != 'REJECTED'}" type="button"
+                            class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#rejectModal">
+                        <i class="bi bi-x-circle me-1"></i> Từ chối
+                    </button>
+
+                    <!-- Assign Staff Modal Trigger -->
+                    <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#assignModal">
+                        <i class="bi bi-person-gear me-1"></i> Phân công cán bộ
+                    </button>
+
+                    <!-- Edit Button -->
+                    <a th:href="@{/admin/applications/{id}/edit(id=${application.id})}" class="btn btn-primary">
+                        <i class="bi bi-pencil me-1"></i> Chỉnh sửa
+                    </a>
+
+                    <!-- Back Button -->
+                    <a th:href="@{/admin/applications}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-1"></i> Quay lại
+                    </a>
+                </div>
+            </div>
+
+            <!-- Flash Alerts -->
+            <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+                <span th:text="${successMessage}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                <span th:text="${errorMessage}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+
+            <div class="row g-4">
+                <!-- Left Column: Citizen & Service details -->
+                <div class="col-lg-8">
+                    <!-- Overview & Processing Info -->
+                    <div class="card dashboard-card mb-4">
+                        <div class="card-header bg-white py-3">
+                            <h5 class="card-title mb-0 fw-bold"><i class="bi bi-info-circle text-primary me-2"></i>Tiến độ và kết quả giải quyết</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-sm-6">
+                                    <label class="text-muted small">Mã số hồ sơ</label>
+                                    <div class="fw-bold" th:text="${application.applicationCode}">APP-123456</div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <label class="text-muted small">Trạng thái hiện tại</label>
+                                    <div>
+                                        <span class="badge" th:classappend="${application.statusBadgeClass}" th:text="${application.statusDisplayName}">Chờ tiếp nhận</span>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <label class="text-muted small">Thời gian tiếp nhận</label>
+                                    <div th:if="${application.submittedAt}" th:text="${#temporals.format(application.submittedAt, 'dd/MM/yyyy HH:mm')}">-</div>
+                                    <div th:unless="${application.submittedAt}" class="text-muted">-</div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <label class="text-muted small">Thời gian hoàn thành</label>
+                                    <div th:if="${application.completedAt}" th:text="${#temporals.format(application.completedAt, 'dd/MM/yyyy HH:mm')}">-</div>
+                                    <div th:unless="${application.completedAt}" class="text-muted">Chưa hoàn thành</div>
+                                </div>
+
+                                <div class="col-12" th:if="${application.resultNote}">
+                                    <div class="alert alert-success mb-0">
+                                        <div class="fw-bold"><i class="bi bi-check2-circle me-1"></i> Ghi chú kết quả phê duyệt:</div>
+                                        <div th:text="${application.resultNote}"></div>
+                                    </div>
+                                </div>
+
+                                <div class="col-12" th:if="${application.rejectionReason}">
+                                    <div class="alert alert-danger mb-0">
+                                        <div class="fw-bold"><i class="bi bi-exclamation-triangle me-1"></i> Lý do từ chối:</div>
+                                        <div th:text="${application.rejectionReason}"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Application Data / Form Content -->
+                    <div class="card dashboard-card mb-4" th:if="${application.data != null && !application.data.empty}">
+                        <div class="card-header bg-white py-3">
+                            <h5 class="card-title mb-0 fw-bold"><i class="bi bi-file-earmark-text text-primary me-2"></i>Dữ liệu biểu mẫu hồ sơ</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-bordered mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th style="width: 35%;">Trường thông tin</th>
+                                            <th>Nội dung</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="entry : ${application.data}">
+                                            <td class="fw-semibold text-muted" th:text="${entry.key}"></td>
+                                            <td th:text="${entry.value}"></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Attached Documents -->
+                    <div class="card dashboard-card mb-4">
+                        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                            <h5 class="card-title mb-0 fw-bold"><i class="bi bi-paperclip text-primary me-2"></i>Tài liệu & Hồ sơ đính kèm</h5>
+                            <span class="badge bg-secondary" th:text="${documents != null ? documents.size() : 0} + ' tệp'">0 tệp</span>
+                        </div>
+                        <div class="card-body">
+                            <div th:if="${documents == null || documents.empty}" class="text-muted py-3 text-center">
+                                <i class="bi bi-folder-x fs-2 d-block mb-1 text-secondary"></i>
+                                Không có tài liệu đính kèm nào.
+                            </div>
+                            <div class="list-group list-group-flush" th:if="${documents != null && !documents.empty}">
+                                <div th:each="doc : ${documents}" class="list-group-item d-flex justify-content-between align-items-center px-0 py-3">
+                                    <div>
+                                        <div class="fw-semibold" th:text="${doc.fileName}">file_name.pdf</div>
+                                        <small class="text-muted" th:text="'Loại: ' + ${doc.documentType}">Loại</small>
+                                    </div>
+                                    <a th:if="${doc.fileUrl}" th:href="${doc.fileUrl}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-download me-1"></i> Tải về
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Processing History / Timeline -->
+                    <div class="card dashboard-card">
+                        <div class="card-header bg-white py-3">
+                            <h5 class="card-title mb-0 fw-bold"><i class="bi bi-clock-history text-primary me-2"></i>Lịch sử xử lý</h5>
+                        </div>
+                        <div class="card-body">
+                            <div th:if="${histories == null || histories.empty}" class="text-muted py-3 text-center">
+                                Chưa có lịch sử thay đổi trạng thái nào.
+                            </div>
+                            <div class="timeline" th:if="${histories != null && !histories.empty}">
+                                <div class="list-group list-group-flush">
+                                    <div th:each="hist : ${histories}" class="list-group-item px-0 py-3">
+                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                            <div>
+                                                <span class="badge bg-secondary-subtle text-dark border me-1" th:text="${hist.oldStatus}">OLD</span>
+                                                <i class="bi bi-arrow-right text-muted mx-1"></i>
+                                                <span class="badge bg-primary" th:text="${hist.newStatus}">NEW</span>
+                                            </div>
+                                            <small class="text-muted" th:if="${hist.changedAt}" th:text="${#temporals.format(hist.changedAt, 'dd/MM/yyyy HH:mm')}"></small>
+                                        </div>
+                                        <div class="small text-muted" th:if="${hist.changedBy != null}">
+                                            Người thực hiện: <span class="fw-semibold text-dark" th:text="${hist.changedBy.email}">admin@example.com</span>
+                                        </div>
+                                        <div class="small mt-1 text-secondary" th:if="${hist.note != null && !hist.note.empty}">
+                                            <em>Ghi chú: <span th:text="${hist.note}"></span></em>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Citizen & Service summary cards -->
+                <div class="col-lg-4">
+                    <!-- Citizen Card -->
+                    <div class="card dashboard-card mb-4">
+                        <div class="card-header bg-white py-3">
+                            <h5 class="card-title mb-0 fw-bold"><i class="bi bi-person text-primary me-2"></i>Thông tin công dân</h5>
+                        </div>
+                        <div class="card-body" th:if="${citizen != null}">
+                            <div class="mb-3">
+                                <label class="text-muted small">Họ và tên</label>
+                                <div class="fw-bold fs-6" th:text="${citizen.name}">Nguyễn Văn A</div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="text-muted small">Số CCCD / Định danh</label>
+                                <div class="fw-semibold" th:text="${citizen.identityNumber ?: '-'}">001234567890</div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="text-muted small">Số điện thoại</label>
+                                <div>
+                                    <a th:if="${citizen.phone}" th:href="'tel:' + ${citizen.phone}" class="text-decoration-none" th:text="${citizen.phone}">0987654321</a>
+                                    <span th:unless="${citizen.phone}" class="text-muted">-</span>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="text-muted small">Địa chỉ thường trú</label>
+                                <div th:text="${citizen.address ?: '-'}">Hà Nội</div>
+                            </div>
+                            <div class="mb-0" th:if="${citizen.user != null}">
+                                <label class="text-muted small">Tài khoản Email</label>
+                                <div th:text="${citizen.user.email}">user@example.com</div>
+                            </div>
+                        </div>
+                        <div class="card-body text-muted text-center py-4" th:unless="${citizen != null}">
+                            Không có thông tin công dân.
+                        </div>
+                    </div>
+
+                    <!-- Service Card -->
+                    <div class="card dashboard-card mb-4">
+                        <div class="card-header bg-white py-3">
+                            <h5 class="card-title mb-0 fw-bold"><i class="bi bi-briefcase text-primary me-2"></i>Dịch vụ công</h5>
+                        </div>
+                        <div class="card-body" th:if="${service != null}">
+                            <div class="mb-3">
+                                <label class="text-muted small">Tên dịch vụ</label>
+                                <div class="fw-bold" th:text="${service.name}">Đăng ký kinh doanh</div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="text-muted small">Mã dịch vụ</label>
+                                <div><code th:text="${service.code}">DV-01</code></div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="text-muted small">Lĩnh vực</label>
+                                <div th:text="${service.category ?: '-'}">Kinh tế</div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="text-muted small">Lệ phí</label>
+                                <div class="fw-bold text-success" th:text="${service.fee != null ? #numbers.formatDecimal(service.fee, 0, 'COMMA', 0, 'POINT') + ' VNĐ' : 'Miễn phí'}">0 VNĐ</div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="text-muted small">Thời hạn giải quyết</label>
+                                <div th:text="${service.processingTime != null ? service.processingTime + ' ngày làm việc' : '-'}">3 ngày</div>
+                            </div>
+                            <div class="mb-0" th:if="${service.department != null}">
+                                <label class="text-muted small">Cơ quan phụ trách</label>
+                                <div class="fw-semibold" th:text="${service.department.name}">Sở Kế hoạch & Đầu tư</div>
+                            </div>
+                        </div>
+                        <div class="card-body text-muted text-center py-4" th:unless="${service != null}">
+                            Không tìm thấy thông tin dịch vụ.
+                        </div>
+                    </div>
+
+                    <!-- Assigned Staff Card -->
+                    <div class="card dashboard-card">
+                        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                            <h5 class="card-title mb-0 fw-bold"><i class="bi bi-person-badge text-primary me-2"></i>Cán bộ phụ trách</h5>
+                            <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#assignModal">
+                                Đổi cán bộ
+                            </button>
+                        </div>
+                        <div class="card-body" th:if="${assignedStaff != null}">
+                            <div class="mb-2">
+                                <label class="text-muted small">Họ và tên cán bộ</label>
+                                <div class="fw-bold" th:text="${assignedStaff.name}">Trần Cán Bộ</div>
+                            </div>
+                            <div class="mb-2">
+                                <label class="text-muted small">Số điện thoại</label>
+                                <div th:text="${assignedStaff.phone ?: '-'}">0912345678</div>
+                            </div>
+                            <div class="mb-0" th:if="${application.departmentName}">
+                                <label class="text-muted small">Phòng ban</label>
+                                <div th:text="${application.departmentName}">Phòng tiếp nhận</div>
+                            </div>
+                        </div>
+                        <div class="card-body text-muted text-center py-4" th:unless="${assignedStaff != null}">
+                            <i class="bi bi-person-dash fs-3 d-block mb-1 text-secondary"></i>
+                            Chưa có cán bộ thụ lý hồ sơ này.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Modal Approve -->
+<div class="modal fade" id="approveModal" tabindex="-1" aria-labelledby="approveModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" th:action="@{/admin/applications/{id}/status(id=${application.id})}">
+                <input type="hidden" name="status" value="APPROVED" />
+                <div class="modal-header">
+                    <h5 class="modal-title" id="approveModalLabel"><i class="bi bi-check-circle text-success me-2"></i>Phê duyệt hồ sơ</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Xác nhận phê duyệt và trả kết quả cho hồ sơ <strong th:text="${application.applicationCode}"></strong>.</p>
+                    <div class="mb-3">
+                        <label for="resultNote" class="form-label">Ghi chú kết quả / Hướng dẫn công dân:</label>
+                        <textarea class="form-control" id="resultNote" name="resultNote" rows="3" placeholder="Nhập ghi chú kết quả phê duyệt..." th:text="${application.resultNote}"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-success">Phê duyệt hồ sơ</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Reject -->
+<div class="modal fade" id="rejectModal" tabindex="-1" aria-labelledby="rejectModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" th:action="@{/admin/applications/{id}/status(id=${application.id})}">
+                <input type="hidden" name="status" value="REJECTED" />
+                <div class="modal-header">
+                    <h5 class="modal-title" id="rejectModalLabel"><i class="bi bi-x-circle text-danger me-2"></i>Từ chối hồ sơ</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Xác nhận từ chối hồ sơ <strong th:text="${application.applicationCode}"></strong>.</p>
+                    <div class="mb-3">
+                        <label for="rejectionReason" class="form-label">Lý do từ chối <span class="text-danger">*</span>:</label>
+                        <textarea class="form-control" id="rejectionReason" name="rejectionReason" rows="3" required placeholder="Nhập chi tiết lý do từ chối hồ sơ..." th:text="${application.rejectionReason}"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-danger">Từ chối hồ sơ</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Assign Staff -->
+<div class="modal fade" id="assignModal" tabindex="-1" aria-labelledby="assignModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" th:action="@{/admin/applications/{id}/assign(id=${application.id})}">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="assignModalLabel"><i class="bi bi-person-gear text-primary me-2"></i>Phân công cán bộ xử lý</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="staffId" class="form-label">Chọn cán bộ phụ trách:</label>
+                        <select class="form-select" id="staffId" name="staffId">
+                            <option value="">-- Bỏ phân công (Trống) --</option>
+                            <option th:each="st : ${staffList}"
+                                    th:value="${st.id}"
+                                    th:text="${st.name} + (${st.phone != null ? ' - SĐT: ' + st.phone : ''})"
+                                    th:selected="${application.assignedStaffId != null && application.assignedStaffId == st.id}">
+                            </option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-primary">Lưu phân công</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

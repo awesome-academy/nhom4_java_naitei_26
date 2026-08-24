@@ -5,6 +5,8 @@ body {
 
 .sidebar {
     width: 240px;
+    flex: 0 0 240px;
+    flex-shrink: 0;
     min-height: calc(100vh - 57px);
 }
 
@@ -27,6 +29,8 @@ body {
 
 .main-content {
     min-height: calc(100vh - 57px);
+    min-width: 0;
+    flex: 1 1 auto;
 }
 
 .dashboard-card {
@@ -50,6 +54,7 @@ footer {
 
     .sidebar {
         width: 100%;
+        flex: 1 1 auto;
         min-height: auto;
     }
 

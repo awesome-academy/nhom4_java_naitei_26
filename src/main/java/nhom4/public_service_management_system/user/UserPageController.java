@@ -175,7 +175,7 @@ public class UserPageController {
     }
 
     private void validateCitizenIdentity(UserForm userForm, BindingResult bindingResult) {
-        if (userForm.getRole() == UserRole.CITIZEN
+        if (userForm.getRole() == UserRole.ROLE_CITIZEN
                 && (userForm.getIdentityNumber() == null || userForm.getIdentityNumber().isBlank())) {
             bindingResult.rejectValue("identityNumber", "required", "So CCCD/CMND khong duoc de trong");
         }

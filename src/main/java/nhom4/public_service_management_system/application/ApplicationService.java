@@ -46,7 +46,10 @@ public class ApplicationService {
     @Transactional
     public ApplicationResponse create(ApplicationRequest request, Long userId) {
         ApplicationEntity entity = applicationMapper.toEntity(request);
-        entity.setCitizenId(userId);
+        
+        CitizenEntity citizen = citizenRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy thông tin công dân cho tài khoản này"));
+        entity.setCitizen(citizen);
         entity.setStatus(ApplicationStatus.RECEIVED);
         entity.setAssignedStaffId(null);
         entity.setCompletedAt(null);
@@ -199,12 +202,10 @@ public class ApplicationService {
     }
 
     public List<ApplicationResponse> getApplication(Long userId) {
-        List<ApplicationResponse> applicationResponseList = new ArrayList<>();
-        List<ApplicationEntity> applicationEntityList = applicationRepository.findAllByCitizenId(userId);
-        for (ApplicationEntity applicationEntity : applicationEntityList) {
-            applicationMapper.toResponse(applicationEntity);
-        }
-        return applicationResponseList;
+        List<ApplicationEntity> applicationEntityList = applicationRepository.findByCitizenUserId(userId);
+        return applicationEntityList.stream()
+                .map(applicationMapper::toResponse)
+                .toList();
     }
 
     public ApplicationResponse getById(Long id) {

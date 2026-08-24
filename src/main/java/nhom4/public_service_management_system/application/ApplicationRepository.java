@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import nhom4.public_service_management_system.application.dto.ApplicationResponse;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import nhom4.public_service_management_system.enums.ApplicationStatus;
@@ -43,3 +44,4 @@ public interface ApplicationRepository extends JpaRepository<ApplicationEntity, 
 }
     List<ApplicationEntity> findAllByCitizenId(Long userId);
 }
+

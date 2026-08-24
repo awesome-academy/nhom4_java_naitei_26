@@ -150,7 +150,7 @@ class UserServiceTest {
     void getDisplayId_shouldReturnSequentialNumber_whenUserExists() {
         when(userRepository.existsById(1L)).thenReturn(true);
         when(userRepository.countByIdGreaterThanAndRoleInAndStatusNot(
-            1L, List.of(UserRole.CITIZEN, UserRole.STAFF), UserStatus.DELETED)).thenReturn(2L);
+            1L, List.of(UserRole.ROLE_CITIZEN, UserRole.ROLE_STAFF), UserStatus.DELETED)).thenReturn(2L);
 
         long displayId = userService.getDisplayId(1L);
 
@@ -160,7 +160,7 @@ class UserServiceTest {
     @Test
     void findAll_shouldFilterByRole_whenRoleProvided() {
         PageRequest pageable = PageRequest.of(0, 10);
-        when(userRepository.findByRoleAndStatusNot(UserRole.CITIZEN, UserStatus.DELETED, pageable))
+        when(userRepository.findByRoleAndStatusNot(UserRole.ROLE_CITIZEN, UserStatus.DELETED, pageable))
                 .thenReturn(new PageImpl<>(List.of(userEntity), pageable, 1));
 
         Page<UserResponse> response = userService.findAll(UserRole.ROLE_CITIZEN, pageable);

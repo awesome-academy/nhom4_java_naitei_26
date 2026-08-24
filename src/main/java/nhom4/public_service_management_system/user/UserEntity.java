@@ -23,7 +23,7 @@ public class UserEntity {
     private String password;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
+    @Column(nullable = false, length = 30, columnDefinition = "VARCHAR(30)")
     private UserRole role;
 
     @Enumerated(EnumType.STRING)

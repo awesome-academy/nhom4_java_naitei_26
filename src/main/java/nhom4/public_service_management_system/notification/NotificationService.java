@@ -22,7 +22,8 @@ public class NotificationService {
     private final ApplicationRepository applicationRepository;
     private final JavaMailSender mailSender;
 
-    public NotificationService(NotificationRepository notificationRepository, UserRepository userRepository, ApplicationRepository applicationRepository, JavaMailSender mailSender) {
+    public NotificationService(NotificationRepository notificationRepository, UserRepository userRepository,
+            ApplicationRepository applicationRepository, JavaMailSender mailSender) {
         this.notificationRepository = notificationRepository;
         this.userRepository = userRepository;
         this.applicationRepository = applicationRepository;

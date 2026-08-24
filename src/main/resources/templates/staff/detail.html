@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Staff Detail - Public Service</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" th:href="@{/css/style.css}" />
+  </head>
+
+  <body>
+    <div th:replace="~{fragments/header :: navbar}"></div>
+
+    <div class="d-flex">
+      <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+
+      <main class="main-content flex-grow-1">
+        <div class="container-fluid p-4">
+          <div
+            class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4"
+          >
+            <div>
+              <h1 class="fw-bold mb-1" th:text="${staff.name()}">Staff</h1>
+              <p class="text-muted mb-0">
+                Assign this staff member to departments, services, and applications.
+              </p>
+            </div>
+
+            <a th:href="@{/admin/staff}" class="btn btn-outline-secondary"
+              >Back to Staff</a
+            >
+          </div>
+
+          <div
+            th:if="${successMessage}"
+            class="alert alert-success"
+            th:text="${successMessage}"
+          ></div>
+
+          <div class="row g-4">
+            <div class="col-lg-4">
+              <div class="card dashboard-card h-100">
+                <div class="card-body">
+                  <h2 class="h5 fw-bold mb-3">Staff Information</h2>
+
+                  <dl class="row mb-0">
+                    <dt class="col-5">ID</dt>
+                    <dd class="col-7" th:text="${staff.id()}"></dd>
+
+                    <dt class="col-5">User ID</dt>
+                    <dd class="col-7" th:text="${staff.userId()}"></dd>
+
+                    <dt class="col-5">Phone</dt>
+                    <dd class="col-7" th:text="${staff.phone()}"></dd>
+
+                    <dt class="col-5">Department ID</dt>
+                    <dd class="col-7">
+                      <span
+                        th:if="${staff.departmentId() != null}"
+                        th:text="${staff.departmentId()}"
+                      ></span>
+                      <span
+                        th:if="${staff.departmentId() == null}"
+                        class="text-muted"
+                        >Unassigned</span
+                      >
+                    </dd>
+
+                    <dt class="col-5">Address</dt>
+                    <dd class="col-7" th:text="${staff.address()}"></dd>
+                  </dl>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-lg-8">
+              <div class="card dashboard-card mb-4">
+                <div class="card-body">
+                  <h2 class="h5 fw-bold mb-3">Department Assignment</h2>
+
+                  <form
+                    class="row g-3 align-items-end"
+                    method="post"
+                    th:action="@{/admin/staff/{id}/department(id=${staff.id()})}"
+                  >
+                    <div class="col-md-8">
+                      <label class="form-label" for="departmentId"
+                        >Department</label
+                      >
+                      <select
+                        class="form-select"
+                        id="departmentId"
+                        name="departmentId"
+                        required
+                      >
+                        <option value="">Select department</option>
+                        <option
+                          th:each="department : ${departments}"
+                          th:value="${department.id}"
+                          th:text="${department.name}"
+                          th:selected="${department.id == staff.departmentId()}"
+                        ></option>
+                      </select>
+                    </div>
+
+                    <div class="col-md-auto">
+                      <button type="submit" class="btn btn-primary">
+                        Assign
+                      </button>
+                    </div>
+                  </form>
+
+                  <form
+                    class="mt-3"
+                    method="post"
+                    th:action="@{/admin/staff/{id}/department/remove(id=${staff.id()})}"
+                  >
+                    <button type="submit" class="btn btn-outline-danger">
+                      Remove from Department
+                    </button>
+                  </form>
+                </div>
+              </div>
+
+              <div class="card dashboard-card mb-4">
+                <div class="card-body">
+                  <h2 class="h5 fw-bold mb-3">Service Assignment</h2>
+
+                  <form
+                    class="row g-3 align-items-end mb-4"
+                    method="post"
+                    th:action="@{/admin/staff/{id}/services(id=${staff.id()})}"
+                  >
+                    <div class="col-md-8">
+                      <label class="form-label" for="serviceId">Service</label>
+                      <select
+                        class="form-select"
+                        id="serviceId"
+                        name="serviceId"
+                        required
+                      >
+                        <option value="">Select service</option>
+                        <option
+                          th:each="service : ${services}"
+                          th:value="${service.id}"
+                          th:text="${service.name + ' (' + service.code + ')'}"
+                        ></option>
+                      </select>
+                    </div>
+
+                    <div class="col-md-auto">
+                      <button type="submit" class="btn btn-primary">
+                        Assign
+                      </button>
+                    </div>
+                  </form>
+
+                  <div class="table-responsive">
+                    <table class="table align-middle mb-0">
+                      <thead class="table-light">
+                        <tr>
+                          <th>ID</th>
+                          <th>Name</th>
+                          <th>Code</th>
+                          <th class="text-end">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr th:each="service : ${assignedServices}">
+                          <td th:text="${service.id}"></td>
+                          <td th:text="${service.name}"></td>
+                          <td th:text="${service.code}"></td>
+                          <td class="text-end">
+                            <form
+                              method="post"
+                              th:action="@{/admin/staff/{id}/services/{serviceId}/remove(id=${staff.id()}, serviceId=${service.id})}"
+                            >
+                              <button
+                                type="submit"
+                                class="btn btn-sm btn-outline-danger"
+                              >
+                                Remove
+                              </button>
+                            </form>
+                          </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(assignedServices)}">
+                          <td colspan="4" class="text-center text-muted py-3">
+                            No services assigned.
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card dashboard-card">
+                <div class="card-body">
+                  <h2 class="h5 fw-bold mb-3">Application Assignment</h2>
+
+                  <form
+                    class="row g-3 align-items-end mb-4"
+                    method="post"
+                    th:action="@{/admin/staff/{id}/applications(id=${staff.id()})}"
+                  >
+                    <div class="col-md-8">
+                      <label class="form-label" for="applicationId"
+                        >Application</label
+                      >
+                      <select
+                        class="form-select"
+                        id="applicationId"
+                        name="applicationId"
+                        required
+                      >
+                        <option value="">Select application</option>
+                        <option
+                          th:each="application : ${applications}"
+                          th:value="${application.id}"
+                          th:text="${application.applicationCode + ' - ' + application.status}"
+                        ></option>
+                      </select>
+                    </div>
+
+                    <div class="col-md-auto">
+                      <button type="submit" class="btn btn-primary">
+                        Assign
+                      </button>
+                    </div>
+                  </form>
+
+                  <div class="table-responsive">
+                    <table class="table align-middle mb-0">
+                      <thead class="table-light">
+                        <tr>
+                          <th>ID</th>
+                          <th>Code</th>
+                          <th>Status</th>
+                          <th class="text-end">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr th:each="application : ${assignedApplications}">
+                          <td th:text="${application.id}"></td>
+                          <td th:text="${application.applicationCode}"></td>
+                          <td th:text="${application.status}"></td>
+                          <td class="text-end">
+                            <form
+                              method="post"
+                              th:action="@{/admin/staff/{id}/applications/{applicationId}/remove(id=${staff.id()}, applicationId=${application.id})}"
+                            >
+                              <button
+                                type="submit"
+                                class="btn btn-sm btn-outline-danger"
+                              >
+                                Remove
+                              </button>
+                            </form>
+                          </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(assignedApplications)}">
+                          <td colspan="4" class="text-center text-muted py-3">
+                            No applications assigned.
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>

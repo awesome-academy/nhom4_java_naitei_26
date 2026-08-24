@@ -11,7 +11,7 @@ import jakarta.validation.constraints.Size;
 public record ServiceRequest(
 
         @NotBlank(message = "Tên dịch vụ không được để trống")
-        @Size(max = 255, message = "Tên dịch vụ tối đa 50 ký tự")
+        @Size(max = 255, message = "Tên dịch vụ tối đa 255 ký tự")
         String name,
 
         @NotBlank(message = "Mã dịch vụ không được để trống")

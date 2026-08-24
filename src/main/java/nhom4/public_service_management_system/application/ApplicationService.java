@@ -20,7 +20,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -59,15 +58,6 @@ public class ApplicationService {
 
         ApplicationEntity savedEntity = applicationRepository.save(entity);
         return applicationMapper.toResponse(savedEntity);
-    }
-
-    public List<ApplicationResponse> getApplication(Long userId) {
-        List<ApplicationResponse> applicationResponseList = new ArrayList<>();
-        List<ApplicationEntity> applicationEntityList = applicationRepository.findAllByCitizenId(userId);
-        for (ApplicationEntity applicationEntity : applicationEntityList) {
-            applicationResponseList.add(applicationMapper.toResponse(applicationEntity)); // Sửa lỗi add thiếu của code cũ
-        }
-        return applicationResponseList;
     }
   
     @Transactional

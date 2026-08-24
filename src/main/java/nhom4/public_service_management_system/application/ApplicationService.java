@@ -55,11 +55,11 @@ public class ApplicationService {
         entity.setCompletedAt(null);
         entity.setResultNote(null);
         entity.setRejectionReason(null);
-        
+
         ApplicationEntity savedEntity = applicationRepository.save(entity);
         return applicationMapper.toResponse(savedEntity);
     }
-
+  
     @Transactional
     public ApplicationResponse createFromForm(ApplicationForm form) {
         CitizenEntity citizen = citizenRepository.findById(form.getCitizenId())
@@ -224,5 +224,45 @@ public class ApplicationService {
             return applicationRepository.count();
         }
         return applicationRepository.countByStatus(status);
+    }
+
+    public Page<ApplicationResponse> getApplicationsForStaff(Long staffId, Pageable pageable) {
+        Page<ApplicationEntity> entities = applicationRepository.findByAssignedStaffId(staffId, pageable);
+        return entities.map(applicationMapper::toResponse);
+    }
+
+    public ApplicationResponse getApplicationDetailForStaff(Long appId, Long staffId) {
+        ApplicationEntity application = applicationRepository.findByIdAndAssignedStaffId(appId, staffId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy hồ sơ hoặc bạn không có quyền truy cập"));
+        return applicationMapper.toResponse(application);
+    }
+
+    @Transactional
+    public ApplicationResponse updateStatusToProcessing(Long appId, Long staffId, Long userId) {
+        ApplicationEntity application = applicationRepository.findByIdAndAssignedStaffId(appId, staffId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy hồ sơ hoặc bạn không có quyền xử lý"));
+
+        if (application.getStatus() != ApplicationStatus.RECEIVED) {
+            throw new IllegalStateException("Hồ sơ phải ở trạng thái RECEIVED mới có thể chuyển sang PROCESSING");
+        }
+
+        ApplicationHistoryEntity history = new ApplicationHistoryEntity();
+        history.setApplication(application);
+        history.setOldStatus(application.getStatus());
+        history.setNewStatus(ApplicationStatus.PROCESSING);
+
+        UserEntity user = new UserEntity();
+        user.setId(userId);
+        history.setChangedBy(user);
+
+        history.setChangedAt(LocalDateTime.now());
+        history.setNote("Cán bộ tiếp nhận và bắt đầu xử lý hồ sơ");
+
+        applicationHistoryRepository.save(history);
+
+        application.setStatus(ApplicationStatus.PROCESSING);
+        ApplicationEntity updatedApp = applicationRepository.save(application);
+
+        return applicationMapper.toResponse(updatedApp);
     }
 }

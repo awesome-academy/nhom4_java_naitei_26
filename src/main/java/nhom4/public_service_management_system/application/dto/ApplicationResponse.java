@@ -1,9 +1,19 @@
 package nhom4.public_service_management_system.application.dto;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import nhom4.public_service_management_system.enums.ApplicationStatus;
+
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Map;
 
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class ApplicationResponse {
 
     private Long id;
@@ -18,27 +28,38 @@ public class ApplicationResponse {
     private String resultNote;
     private String rejectionReason;
 
-    // Getters and Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-    public String getApplicationCode() { return applicationCode; }
-    public void setApplicationCode(String applicationCode) { this.applicationCode = applicationCode; }
-    public Long getCitizenId() { return citizenId; }
-    public void setCitizenId(Long citizenId) { this.citizenId = citizenId; }
-    public Long getServiceId() { return serviceId; }
-    public void setServiceId(Long serviceId) { this.serviceId = serviceId; }
-    public Long getAssignedStaffId() { return assignedStaffId; }
-    public void setAssignedStaffId(Long assignedStaffId) { this.assignedStaffId = assignedStaffId; }
-    public ApplicationStatus getStatus() { return status; }
-    public void setStatus(ApplicationStatus status) { this.status = status; }
-    public LocalDateTime getSubmittedAt() { return submittedAt; }
-    public void setSubmittedAt(LocalDateTime submittedAt) { this.submittedAt = submittedAt; }
-    public LocalDateTime getCompletedAt() { return completedAt; }
-    public void setCompletedAt(LocalDateTime completedAt) { this.completedAt = completedAt; }
-    public Map<String, Object> getData() { return data; }
-    public void setData(Map<String, Object> data) { this.data = data; }
-    public String getResultNote() { return resultNote; }
-    public void setResultNote(String resultNote) { this.resultNote = resultNote; }
-    public String getRejectionReason() { return rejectionReason; }
-    public void setRejectionReason(String rejectionReason) { this.rejectionReason = rejectionReason; }
+    // Helper display fields
+    private String citizenName;
+    private String citizenIdentityNumber;
+    private String citizenPhone;
+    private String citizenEmail;
+
+    private String serviceName;
+    private String serviceCode;
+    private String serviceCategory;
+    private BigDecimal serviceFee;
+    private String departmentName;
+
+    private String assignedStaffName;
+    private String assignedStaffPhone;
+
+    public String getStatusBadgeClass() {
+        if (status == null) return "bg-secondary";
+        return switch (status) {
+            case RECEIVED -> "bg-warning text-dark";
+            case PROCESSING -> "bg-primary";
+            case APPROVED -> "bg-success";
+            case REJECTED -> "bg-danger";
+        };
+    }
+
+    public String getStatusDisplayName() {
+        if (status == null) return "Không xác định";
+        return switch (status) {
+            case RECEIVED -> "Chờ tiếp nhận";
+            case PROCESSING -> "Đang xử lý";
+            case APPROVED -> "Đã phê duyệt";
+            case REJECTED -> "Bị từ chối";
+        };
+    }
 }

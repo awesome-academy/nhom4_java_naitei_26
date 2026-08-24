@@ -3,34 +3,18 @@
 <body>
 <aside th:fragment="sidebar" class="sidebar border-end bg-white">
   <div class="p-3">
-    <div class="text-uppercase text-muted small fw-bold mb-2">Client</div>
+    <div class="text-uppercase text-muted small fw-bold mb-2">Hệ thống</div>
 
     <div class="nav flex-column">
-      <a class="nav-link active" th:href="@{/static}"> Home </a>
-      <a class="nav-link" href="#"> Service Catalog </a>
-      <a class="nav-link" href="#"> My Applications </a>
-      <a class="nav-link" href="#"> Notifications </a>
-      <a class="nav-link" href="#"> Citizen Profile </a>
-
-      <div class="text-uppercase text-muted small fw-bold mb-2 mt-4">Admin</div>
-
-          <a class="nav-link" href="#"> My Applications </a>
-
-          <a class="nav-link" href="#"> Notifications </a>
-
-          <a class="nav-link" href="#"> Citizen Profile </a>
-
-          <div class="text-uppercase text-muted small fw-bold mb-2 mt-4">Admin</div>
-
-          <a class="nav-link" th:href="@{/admin/users}"> Users </a>
-
-          <a class="nav-link" th:href="@{/admin/staff}"> Staff </a>
-      
-          <a class="nav-link" th:href="@{/admin/activity-logs}"> Activity Logs </a>
-
-          <a class="nav-link" th:href="@{/admin/export}"> Export CSV </a>
-        </div>
-      </div>
-    </aside>
-  </body>
+      <a class="nav-link" th:href="@{/}"> Trang chủ </a>
+      <a class="nav-link" th:href="@{/admin/applications}"> Quản lý Hồ sơ </a>
+      <a class="nav-link" th:href="@{/admin/departments}"> Phòng ban </a>
+      <a class="nav-link" th:href="@{/admin/services}"> Dịch vụ công </a>
+      <a class="nav-link" th:href="@{/admin/staff}"> Cán bộ (Staff) </a>
+      <a class="nav-link" th:href="@{/admin/users}"> Người dùng </a>
+      <a class="nav-link" th:href="@{/admin/activity-logs}"> Nhật ký hoạt động </a>
+    </div>
+  </div>
+</aside>
+</body>
 </html>

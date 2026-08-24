@@ -76,7 +76,7 @@ public class UserService {
         validateManagedRole(form.getRole());
         validateUniqueEmail(form.getEmail(), null);
         validateUniquePhone(form.getPhone(), null);
-        if (form.getRole() == UserRole.CITIZEN) {
+        if (form.getRole() == UserRole.ROLE_CITIZEN) {
             citizenRepository.findByIdentityNumber(form.getIdentityNumber()).ifPresent(existing -> {
                 throw new DuplicateResourceException("So CCCD/CMND da duoc su dung: " + form.getIdentityNumber());
             });

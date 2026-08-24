@@ -1,11 +1,13 @@
 package nhom4.public_service_management_system.application;
 
-import java.util.List;
-
-import nhom4.public_service_management_system.application.dto.ApplicationResponse;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ApplicationRepository extends JpaRepository<ApplicationEntity, Long> {
@@ -17,4 +19,8 @@ public interface ApplicationRepository extends JpaRepository<ApplicationEntity, 
     List<ApplicationEntity> findByAssignedStaffId(Long assignedStaffId);
 
     List<ApplicationEntity> findAllByCitizenId(Long userId);
+
+    Page<ApplicationEntity> findByAssignedStaffId(Long assignedStaffId, Pageable pageable);
+
+    Optional<ApplicationEntity> findByIdAndAssignedStaffId(Long id, Long assignedStaffId);
 }

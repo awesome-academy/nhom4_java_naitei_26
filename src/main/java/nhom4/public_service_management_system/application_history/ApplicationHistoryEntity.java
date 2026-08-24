@@ -18,12 +18,39 @@ public class ApplicationHistoryEntity {
     @JoinColumn(name = "application_id")
     private ApplicationEntity application;
 
+    @Enumerated(EnumType.STRING)
     private ApplicationStatus oldStatus;
+
+    @Enumerated(EnumType.STRING)
     private ApplicationStatus newStatus;
 
     @ManyToOne
     @JoinColumn(name = "changed_by")
     private UserEntity changedBy;
+
     private LocalDateTime changedAt;
+
     private String note;
+
+    // --- GETTERS & SETTERS ---
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
+    public ApplicationEntity getApplication() { return application; }
+    public void setApplication(ApplicationEntity application) { this.application = application; }
+
+    public ApplicationStatus getOldStatus() { return oldStatus; }
+    public void setOldStatus(ApplicationStatus oldStatus) { this.oldStatus = oldStatus; }
+
+    public ApplicationStatus getNewStatus() { return newStatus; }
+    public void setNewStatus(ApplicationStatus newStatus) { this.newStatus = newStatus; }
+
+    public UserEntity getChangedBy() { return changedBy; }
+    public void setChangedBy(UserEntity changedBy) { this.changedBy = changedBy; }
+
+    public LocalDateTime getChangedAt() { return changedAt; }
+    public void setChangedAt(LocalDateTime changedAt) { this.changedAt = changedAt; }
+
+    public String getNote() { return note; }
+    public void setNote(String note) { this.note = note; }
 }

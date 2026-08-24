@@ -4,12 +4,17 @@ import jakarta.validation.constraints.NotNull;
 import java.util.Map;
 
 public class ApplicationRequest {
+    @NotNull(message = "Citizen ID is required")
+    private Long citizenId;
+
     @NotNull(message = "Service ID is required")
     private Long serviceId;
 
     @NotNull(message = "Application data is required")
     private Map<String, Object> data;
 
+    public Long getCitizenId() { return citizenId; }
+    public void setCitizenId(Long citizenId) { this.citizenId = citizenId; }
     public Long getServiceId() { return serviceId; }
     public void setServiceId(Long serviceId) { this.serviceId = serviceId; }
     public Map<String, Object> getData() { return data; }

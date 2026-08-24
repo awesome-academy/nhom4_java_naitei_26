@@ -104,7 +104,7 @@ public class DepartmentPageController {
         model.addAttribute("departmentForm", DepartmentForm.from(departmentService.getById(id)));
         model.addAttribute("staffList", staffRepository.findAll());
         model.addAttribute("mode", "edit");
-        return "department/form";
+        return "departments/form";
     }
 
     @PostMapping("/{id}")
@@ -128,7 +128,7 @@ public class DepartmentPageController {
             bindingResult.rejectValue("code", "duplicate", ex.getMessage());
             model.addAttribute("departmentId", id);
             prepareFormModel(model, "edit");
-            return "deparments/form";
+            return "departments/form";
         } catch (ResourceNotFoundException ex) {
             bindingResult.rejectValue("leaderStaffId", "invalid", ex.getMessage());
             model.addAttribute("departmentId", id);
@@ -137,7 +137,7 @@ public class DepartmentPageController {
         }
     }
 
-    @PostMapping("/{id}/deletes")
+    @PostMapping("/{id}/delete")
     public String delete(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         departmentService.delete(id);
         redirectAttributes.addFlashAttribute("successMessage", "Đã xóa phòng ban.");

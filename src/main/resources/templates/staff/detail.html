@@ -56,14 +56,14 @@
                     <dt class="col-5">Phone</dt>
                     <dd class="col-7" th:text="${staff.phone()}"></dd>
 
-                    <dt class="col-5">Department ID</dt>
+                    <dt class="col-5">Department</dt>
                     <dd class="col-7">
                       <span
-                        th:if="${staff.departmentId() != null}"
-                        th:text="${staff.departmentId()}"
+                        th:if="${staff.departmentName() != null}"
+                        th:text="${staff.departmentName()}"
                       ></span>
                       <span
-                        th:if="${staff.departmentId() == null}"
+                        th:if="${staff.departmentName() == null}"
                         class="text-muted"
                         >Unassigned</span
                       >

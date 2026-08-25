@@ -38,13 +38,15 @@ public final class DepartmentMapper {
             return null;
         }
         Long leaderId = entity.getLeaderStaffId() != null ? entity.getLeaderStaffId().getId() : null;
+        String leaderName = entity.getLeaderStaffId() != null ? entity.getLeaderStaffId().getName() : null;
 
         return new DepartmentResponse(
                 entity.getId(),
                 entity.getName(),
                 entity.getCode(),
                 entity.getAddress(),
-                leaderId);
+                leaderId,
+                leaderName);
     }
 
     public static List<DepartmentResponse> toResponseList(List<DepartmentEntity> entities) {

@@ -3,8 +3,6 @@
 <body>
 <aside th:fragment="sidebar" class="sidebar border-end bg-white">
   <div class="p-3">
-    <div class="text-uppercase text-muted small fw-bold mb-2">Hệ thống</div>
-
     <div class="nav flex-column">
       <a class="nav-link" th:href="@{/}"> Trang chủ </a>
       <a class="nav-link" th:href="@{/admin/applications}"> Quản lý Hồ sơ </a>
@@ -14,6 +12,7 @@
       <a class="nav-link" th:href="@{/admin/users}"> Người dùng </a>
       <a class="nav-link" th:href="@{/admin/activity-logs}"> Nhật ký hoạt động </a>
       <a class="nav-link" th:href="@{/admin/import}"> Import CSV </a>
+      <a class="nav-link" th:href="@{/admin/export}"> Export CSV </a>
     </div>
   </div>
 </aside>

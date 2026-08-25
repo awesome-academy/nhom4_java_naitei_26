@@ -81,7 +81,7 @@
                     <th scope="col">Name</th>
                     <th scope="col">User ID</th>
                     <th scope="col">Phone</th>
-                    <th scope="col">Department ID</th>
+                    <th scope="col">Department</th>
                     <th scope="col">Address</th>
                     <th scope="col" class="text-end">Actions</th>
                   </tr>
@@ -94,12 +94,12 @@
                     <td th:text="${member.phone()}"></td>
                     <td>
                       <span
-                        th:if="${member.departmentId() != null}"
+                        th:if="${member.departmentName() != null}"
                         class="badge text-bg-primary"
-                        th:text="${member.departmentId()}"
+                        th:text="${member.departmentName()}"
                       ></span>
                       <span
-                        th:if="${member.departmentId() == null}"
+                        th:if="${member.departmentName() == null}"
                         class="text-muted"
                         >Unassigned</span
                       >

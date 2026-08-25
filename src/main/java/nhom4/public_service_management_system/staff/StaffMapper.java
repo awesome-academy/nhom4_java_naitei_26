@@ -14,13 +14,15 @@ public class StaffMapper {
     }
 
     public StaffResponse toResponse(StaffEntity staff) {
+        String departmentName = staff.getDepartment() != null ? staff.getDepartment().getName() : null;
         return new StaffResponse(
                 staff.getId(),
                 staff.getUserId(),
                 staff.getName(),
                 staff.getPhone(),
                 staff.getAddress(),
-                staff.getDepartmentId()
+                staff.getDepartmentId(),
+                departmentName
         );
     }
 

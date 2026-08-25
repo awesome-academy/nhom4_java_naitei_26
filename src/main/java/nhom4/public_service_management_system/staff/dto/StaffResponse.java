@@ -6,6 +6,7 @@ public record StaffResponse(
         String name,
         String phone,
         String address,
-        Long departmentId
+        Long departmentId,
+        String departmentName
 ) {
 }

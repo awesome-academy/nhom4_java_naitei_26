@@ -9,6 +9,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -35,18 +36,21 @@ public class CsvImportService {
     private final ServiceRepository serviceRepository;
     private final StaffRepository staffRepository;
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public CsvImportService(
             CitizenRepository citizenRepository,
             DepartmentRepository departmentRepository,
             ServiceRepository serviceRepository,
             StaffRepository staffRepository,
-            UserRepository userRepository) {
+            UserRepository userRepository,
+            PasswordEncoder passwordEncoder) {
         this.citizenRepository = citizenRepository;
         this.departmentRepository = departmentRepository;
         this.serviceRepository = serviceRepository;
         this.staffRepository = staffRepository;
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public int importCitizens(MultipartFile file) {
@@ -63,7 +67,7 @@ public class CsvImportService {
 
             UserEntity user = new UserEntity();
             user.setEmail(email);
-            user.setPassword(value(row, 1));
+            user.setPassword(passwordEncoder.encode(value(row, 1)));
             user.setRole(UserRole.ROLE_CITIZEN);
             user.setStatus(UserStatus.ACTIVE);
             user.setEmailNotificationEnabled(true);
@@ -122,18 +126,26 @@ public class CsvImportService {
 
     public int importStaff(MultipartFile file) {
         return importRows(file, row -> {
-            Long userId = parseLong(value(row, 0));
-            String phone = value(row, 2);
-            if (staffRepository.existsByUserId(userId) || staffRepository.findByPhone(phone).isPresent()) {
+            String email = value(row, 0);
+            String phone = value(row, 3);
+            if (userRepository.existsByEmail(email) || staffRepository.findByPhone(phone).isPresent()) {
                 return false;
             }
 
+            UserEntity user = new UserEntity();
+            user.setEmail(email);
+            user.setPassword(passwordEncoder.encode(value(row, 1)));
+            user.setRole(UserRole.ROLE_STAFF);
+            user.setStatus(UserStatus.ACTIVE);
+            user.setEmailNotificationEnabled(true);
+            UserEntity savedUser = userRepository.save(user);
+
             StaffEntity staff = new StaffEntity();
-            staff.setUserId(userId);
-            staff.setName(value(row, 1));
+            staff.setUserId(savedUser.getId());
+            staff.setName(value(row, 2));
             staff.setPhone(phone);
-            staff.setAddress(value(row, 3));
-            staff.setDepartmentId(parseLong(value(row, 4)));
+            staff.setAddress(value(row, 4));
+            staff.setDepartmentId(parseLong(value(row, 5)));
             staffRepository.save(staff);
             return true;
         });

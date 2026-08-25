@@ -97,6 +97,7 @@ public class ApplicationPageController {
         ApplicationEntity entity = applicationService.getEntityById(id);
 
         model.addAttribute("application", application);
+        model.addAttribute("applicationId", id);
         model.addAttribute("applicationEntity", entity);
         model.addAttribute("citizen", entity.getCitizen());
 

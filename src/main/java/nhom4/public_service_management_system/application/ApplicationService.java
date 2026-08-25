@@ -134,7 +134,10 @@ public class ApplicationService {
         ApplicationEntity entity = applicationRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy hồ sơ với id: " + id));
 
-        ApplicationStatus oldStatus = entity.getStatus();
+        ApplicationStatus oldStatus = entity.getStatus() != null
+            ? entity.getStatus()
+            : ApplicationStatus.RECEIVED;
+        entity.setStatus(oldStatus);
         entity.setStatus(newStatus);
 
         if (resultNote != null && !resultNote.isBlank()) {
@@ -150,7 +153,7 @@ public class ApplicationService {
             entity.setCompletedAt(null);
         }
 
-        if (applicationHistoryRepository != null) {
+        if (applicationHistoryRepository != null && oldStatus != newStatus) {
             ApplicationHistoryEntity history = new ApplicationHistoryEntity();
             history.setApplication(entity);
             history.setOldStatus(oldStatus);
@@ -264,5 +267,115 @@ public class ApplicationService {
         ApplicationEntity updatedApp = applicationRepository.save(application);
 
         return applicationMapper.toResponse(updatedApp);
+    }
+
+    // ─── Manager methods ──────────────────────────────────────────────────────
+
+    /**
+     * Chuyển hồ sơ cho cán bộ khác.
+     * Manager có thể chuyển bất kể trạng thái hồ sơ hiện tại.
+     */
+    @Transactional
+    public ApplicationResponse transferToStaff(Long appId, Long newStaffId, Long managerId) {
+        ApplicationEntity application = applicationRepository.findById(appId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy hồ sơ với id: " + appId));
+
+        staffRepository.findById(newStaffId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy cán bộ với id: " + newStaffId));
+
+        Long oldStaffId = application.getAssignedStaffId();
+        application.setAssignedStaffId(newStaffId);
+
+        if (applicationHistoryRepository != null) {
+            ApplicationHistoryEntity history = new ApplicationHistoryEntity();
+            history.setApplication(application);
+            history.setOldStatus(application.getStatus());
+            history.setNewStatus(application.getStatus());
+            UserEntity manager = new UserEntity();
+            manager.setId(managerId);
+            history.setChangedBy(manager);
+            history.setChangedAt(LocalDateTime.now());
+            history.setNote("Manager chuyển hồ sơ từ staff#" + oldStaffId + " sang staff#" + newStaffId);
+            applicationHistoryRepository.save(history);
+        }
+
+        ApplicationEntity updated = applicationRepository.save(application);
+        return applicationMapper.toResponse(updated);
+    }
+
+    /**
+     * Duyệt hồ sơ: PROCESSING → APPROVED.
+     * Validate: hồ sơ phải đang ở trạng thái PROCESSING.
+     */
+    @Transactional
+    public ApplicationResponse approveApplication(Long appId, String resultNote, Long managerId) {
+        ApplicationEntity application = applicationRepository.findById(appId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy hồ sơ với id: " + appId));
+
+        if (application.getStatus() != ApplicationStatus.PROCESSING) {
+            throw new IllegalStateException(
+                    "Chỉ có thể duyệt hồ sơ đang ở trạng thái PROCESSING. Trạng thái hiện tại: "
+                    + application.getStatus());
+        }
+
+        ApplicationStatus oldStatus = application.getStatus();
+        application.setStatus(ApplicationStatus.APPROVED);
+        application.setCompletedAt(LocalDateTime.now());
+        if (resultNote != null && !resultNote.isBlank()) {
+            application.setResultNote(resultNote);
+        }
+
+        if (applicationHistoryRepository != null) {
+            ApplicationHistoryEntity history = new ApplicationHistoryEntity();
+            history.setApplication(application);
+            history.setOldStatus(oldStatus);
+            history.setNewStatus(ApplicationStatus.APPROVED);
+            UserEntity manager = new UserEntity();
+            manager.setId(managerId);
+            history.setChangedBy(manager);
+            history.setChangedAt(LocalDateTime.now());
+            history.setNote(resultNote != null ? resultNote : "Manager phê duyệt hồ sơ");
+            applicationHistoryRepository.save(history);
+        }
+
+        ApplicationEntity updated = applicationRepository.save(application);
+        return applicationMapper.toResponse(updated);
+    }
+
+    /**
+     * Từ chối hồ sơ: PROCESSING → REJECTED.
+     * Validate: hồ sơ phải đang ở trạng thái PROCESSING.
+     */
+    @Transactional
+    public ApplicationResponse rejectApplication(Long appId, String rejectionReason, Long managerId) {
+        ApplicationEntity application = applicationRepository.findById(appId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy hồ sơ với id: " + appId));
+
+        if (application.getStatus() != ApplicationStatus.PROCESSING) {
+            throw new IllegalStateException(
+                    "Chỉ có thể từ chối hồ sơ đang ở trạng thái PROCESSING. Trạng thái hiện tại: "
+                    + application.getStatus());
+        }
+
+        ApplicationStatus oldStatus = application.getStatus();
+        application.setStatus(ApplicationStatus.REJECTED);
+        application.setCompletedAt(LocalDateTime.now());
+        application.setRejectionReason(rejectionReason);
+
+        if (applicationHistoryRepository != null) {
+            ApplicationHistoryEntity history = new ApplicationHistoryEntity();
+            history.setApplication(application);
+            history.setOldStatus(oldStatus);
+            history.setNewStatus(ApplicationStatus.REJECTED);
+            UserEntity manager = new UserEntity();
+            manager.setId(managerId);
+            history.setChangedBy(manager);
+            history.setChangedAt(LocalDateTime.now());
+            history.setNote(rejectionReason);
+            applicationHistoryRepository.save(history);
+        }
+
+        ApplicationEntity updated = applicationRepository.save(application);
+        return applicationMapper.toResponse(updated);
     }
 }

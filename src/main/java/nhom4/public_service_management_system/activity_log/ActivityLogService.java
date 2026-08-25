@@ -73,4 +73,20 @@ public class ActivityLogService {
     public void deleteOldLogs(LocalDateTime beforeDate) {
         activityLogRepository.deleteByCreatedAtBefore(beforeDate);
     }
+
+    @Transactional
+    public void logCurrentAction(String action, String description) {
+        org.springframework.security.core.Authentication auth = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+
+        if (auth != null && auth.isAuthenticated() && !auth.getPrincipal().equals("anonymousUser")) {
+            String currentEmail = auth.getName();
+            userRepository.findByEmail(currentEmail).ifPresent(user -> {
+                nhom4.public_service_management_system.activity_log.ActivityLogEntity entity = new nhom4.public_service_management_system.activity_log.ActivityLogEntity();
+                entity.setAction(action);
+                entity.setDescription(description);
+                entity.setUser(user);
+                activityLogRepository.save(entity);
+            });
+        }
+    }
 }

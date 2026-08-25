@@ -36,6 +36,7 @@ public class DepartmentService {
 
         DepartmentEntity entity = DepartmentMapper.toEntity(request, leader);
         DepartmentEntity saved = departmentRepository.save(entity);
+        leader.setDepartmentId(saved.getId());
         return DepartmentMapper.toResponse(saved);
     }
 

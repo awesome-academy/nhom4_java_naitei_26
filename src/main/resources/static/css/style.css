@@ -7,7 +7,10 @@ body {
     width: 240px;
     flex: 0 0 240px;
     flex-shrink: 0;
-    min-height: calc(100vh - 57px);
+    position: sticky;
+    top: 57px;
+    height: calc(100vh - 57px);
+    overflow-y: auto;
 }
 
 .sidebar .nav-link {
@@ -55,6 +58,8 @@ footer {
     .sidebar {
         width: 100%;
         flex: 1 1 auto;
+        position: static;
+        height: auto;
         min-height: auto;
     }
 

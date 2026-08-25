@@ -5,6 +5,7 @@ public record DepartmentResponse(
         String name,
         String code,
         String address,
-        Long leaderStaffId
+        Long leaderStaffId,
+        String leaderStaffName
 ) {
 }

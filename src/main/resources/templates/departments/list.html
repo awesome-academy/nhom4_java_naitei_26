@@ -78,7 +78,7 @@
                                         <th scope="col">Tên phòng ban</th>
                                         <th scope="col">Mã</th>
                                         <th scope="col">Địa chỉ</th>
-                                        <th scope="col">Trưởng phòng (Staff ID)</th>
+                                        <th scope="col">Trưởng phòng</th>
                                         <th scope="col" class="text-end">Hành động</th>
                                     </tr>
                                 </thead>
@@ -92,7 +92,10 @@
                                             style="max-width: 280px"
                                             th:text="${department.address()}"
                                         ></td>
-                                        <td th:text="${department.leaderStaffId()}"></td>
+                                        <td>
+                                            <span th:if="${department.leaderStaffName() != null}" th:text="${department.leaderStaffName()}"></span>
+                                            <span th:if="${department.leaderStaffName() == null}" class="text-muted">Chưa có</span>
+                                        </td>
                                         <td class="text-end">
                                             <div class="d-flex gap-2 justify-content-end">
                                                 <a

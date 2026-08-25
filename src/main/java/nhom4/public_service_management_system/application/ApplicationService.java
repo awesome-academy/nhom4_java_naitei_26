@@ -13,6 +13,8 @@ import nhom4.public_service_management_system.service.ServiceEntity;
 import nhom4.public_service_management_system.service.ServiceRepository;
 import nhom4.public_service_management_system.staff.StaffRepository;
 import nhom4.public_service_management_system.user.UserEntity;
+import nhom4.public_service_management_system.activity_log.ActivityLogService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -43,10 +45,13 @@ public class ApplicationService {
     @Autowired(required = false)
     private ApplicationHistoryRepository applicationHistoryRepository;
 
+    @Autowired
+    private ActivityLogService activityLogService;
+
     @Transactional
     public ApplicationResponse create(ApplicationRequest request, Long userId) {
         ApplicationEntity entity = applicationMapper.toEntity(request);
-        
+
         CitizenEntity citizen = citizenRepository.findByUserId(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy thông tin công dân cho tài khoản này"));
         entity.setCitizen(citizen);
@@ -57,9 +62,12 @@ public class ApplicationService {
         entity.setRejectionReason(null);
 
         ApplicationEntity savedEntity = applicationRepository.save(entity);
+
+        activityLogService.logCurrentAction("CREATE", "Công dân nộp hồ sơ mới ID: " + savedEntity.getId());
+
         return applicationMapper.toResponse(savedEntity);
     }
-  
+
     @Transactional
     public ApplicationResponse createFromForm(ApplicationForm form) {
         CitizenEntity citizen = citizenRepository.findById(form.getCitizenId())
@@ -82,6 +90,9 @@ public class ApplicationService {
         }
 
         ApplicationEntity savedEntity = applicationRepository.save(entity);
+
+        activityLogService.logCurrentAction("CREATE", "Nộp hồ sơ (từ form) ID: " + savedEntity.getId());
+
         return applicationMapper.toResponse(savedEntity);
     }
 
@@ -126,6 +137,9 @@ public class ApplicationService {
         }
 
         ApplicationEntity updated = applicationRepository.save(entity);
+
+        activityLogService.logCurrentAction("UPDATE", "Cập nhật hồ sơ ID: " + id);
+
         return applicationMapper.toResponse(updated);
     }
 
@@ -135,8 +149,8 @@ public class ApplicationService {
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy hồ sơ với id: " + id));
 
         ApplicationStatus oldStatus = entity.getStatus() != null
-            ? entity.getStatus()
-            : ApplicationStatus.RECEIVED;
+                ? entity.getStatus()
+                : ApplicationStatus.RECEIVED;
         entity.setStatus(oldStatus);
         entity.setStatus(newStatus);
 
@@ -165,6 +179,9 @@ public class ApplicationService {
         }
 
         ApplicationEntity updated = applicationRepository.save(entity);
+
+        activityLogService.logCurrentAction("UPDATE_STATUS", "Cập nhật trạng thái hồ sơ ID: " + id + " thành " + newStatus);
+
         return applicationMapper.toResponse(updated);
     }
 
@@ -180,6 +197,9 @@ public class ApplicationService {
 
         entity.setAssignedStaffId(staffId);
         ApplicationEntity updated = applicationRepository.save(entity);
+
+        activityLogService.logCurrentAction("ASSIGN_STAFF", "Phân công hồ sơ ID: " + id + " cho cán bộ ID: " + staffId);
+
         return applicationMapper.toResponse(updated);
     }
 
@@ -189,6 +209,8 @@ public class ApplicationService {
             throw new ResourceNotFoundException("Không tìm thấy hồ sơ với id: " + id);
         }
         applicationRepository.deleteById(id);
+
+        activityLogService.logCurrentAction("DELETE", "Xóa hồ sơ ID: " + id);
     }
 
     public Page<ApplicationResponse> getAll(Pageable pageable) {
@@ -266,15 +288,13 @@ public class ApplicationService {
         application.setStatus(ApplicationStatus.PROCESSING);
         ApplicationEntity updatedApp = applicationRepository.save(application);
 
+        activityLogService.logCurrentAction("UPDATE_STATUS", "Cán bộ ID: " + staffId + " tiếp nhận hồ sơ ID: " + appId);
+
         return applicationMapper.toResponse(updatedApp);
     }
 
     // ─── Manager methods ──────────────────────────────────────────────────────
 
-    /**
-     * Chuyển hồ sơ cho cán bộ khác.
-     * Manager có thể chuyển bất kể trạng thái hồ sơ hiện tại.
-     */
     @Transactional
     public ApplicationResponse transferToStaff(Long appId, Long newStaffId, Long managerId) {
         ApplicationEntity application = applicationRepository.findById(appId)
@@ -300,13 +320,12 @@ public class ApplicationService {
         }
 
         ApplicationEntity updated = applicationRepository.save(application);
+
+        activityLogService.logCurrentAction("ASSIGN_STAFF", "Manager chuyển hồ sơ ID: " + appId + " sang cán bộ ID: " + newStaffId);
+
         return applicationMapper.toResponse(updated);
     }
 
-    /**
-     * Duyệt hồ sơ: PROCESSING → APPROVED.
-     * Validate: hồ sơ phải đang ở trạng thái PROCESSING.
-     */
     @Transactional
     public ApplicationResponse approveApplication(Long appId, String resultNote, Long managerId) {
         ApplicationEntity application = applicationRepository.findById(appId)
@@ -315,7 +334,7 @@ public class ApplicationService {
         if (application.getStatus() != ApplicationStatus.PROCESSING) {
             throw new IllegalStateException(
                     "Chỉ có thể duyệt hồ sơ đang ở trạng thái PROCESSING. Trạng thái hiện tại: "
-                    + application.getStatus());
+                            + application.getStatus());
         }
 
         ApplicationStatus oldStatus = application.getStatus();
@@ -339,13 +358,12 @@ public class ApplicationService {
         }
 
         ApplicationEntity updated = applicationRepository.save(application);
+
+        activityLogService.logCurrentAction("UPDATE_STATUS", "Manager phê duyệt hồ sơ ID: " + appId);
+
         return applicationMapper.toResponse(updated);
     }
 
-    /**
-     * Từ chối hồ sơ: PROCESSING → REJECTED.
-     * Validate: hồ sơ phải đang ở trạng thái PROCESSING.
-     */
     @Transactional
     public ApplicationResponse rejectApplication(Long appId, String rejectionReason, Long managerId) {
         ApplicationEntity application = applicationRepository.findById(appId)
@@ -354,7 +372,7 @@ public class ApplicationService {
         if (application.getStatus() != ApplicationStatus.PROCESSING) {
             throw new IllegalStateException(
                     "Chỉ có thể từ chối hồ sơ đang ở trạng thái PROCESSING. Trạng thái hiện tại: "
-                    + application.getStatus());
+                            + application.getStatus());
         }
 
         ApplicationStatus oldStatus = application.getStatus();
@@ -376,6 +394,9 @@ public class ApplicationService {
         }
 
         ApplicationEntity updated = applicationRepository.save(application);
+
+        activityLogService.logCurrentAction("UPDATE_STATUS", "Manager từ chối hồ sơ ID: " + appId);
+
         return applicationMapper.toResponse(updated);
     }
 }

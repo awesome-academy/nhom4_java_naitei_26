@@ -13,17 +13,20 @@ import nhom4.public_service_management_system.service.dto.ServiceRequest;
 import nhom4.public_service_management_system.service.dto.ServiceResponse;
 import nhom4.public_service_management_system.staff.StaffEntity;
 import nhom4.public_service_management_system.staff.StaffRepository;
+import nhom4.public_service_management_system.activity_log.ActivityLogService;
 
 @Service
 public class ServiceService {
     private final ServiceRepository serviceRepository;
     private final DepartmentRepository departmentRepository;
     private final StaffRepository staffRepository;
+    private final ActivityLogService activityLogService;
 
-    public ServiceService(ServiceRepository serviceRepository, DepartmentRepository departmentRepository, StaffRepository staffRepository) {
+    public ServiceService(ServiceRepository serviceRepository, DepartmentRepository departmentRepository, StaffRepository staffRepository, ActivityLogService activityLogService) {
         this.serviceRepository = serviceRepository;
         this.departmentRepository = departmentRepository;
         this.staffRepository = staffRepository;
+        this.activityLogService = activityLogService;
     }
 
     @Transactional
@@ -38,6 +41,9 @@ public class ServiceService {
 
         ServiceEntity entity = ServiceMapper.toEntity(request, department, assignedStaff);
         ServiceEntity saved = serviceRepository.save(entity);
+
+        activityLogService.logCurrentAction("CREATE", "Tạo mới dịch vụ: " + request.name());
+
         return ServiceMapper.toResponse(saved);
     }
 
@@ -54,6 +60,9 @@ public class ServiceService {
         StaffEntity assignedStaff = findStaffIfPresent(request.assignedStaffId());
 
         ServiceMapper.updateEntityFromRequest(entity, request, department, assignedStaff);
+
+        activityLogService.logCurrentAction("UPDATE", "Cập nhật dịch vụ ID: " + id);
+
         return ServiceMapper.toResponse(entity);
     }
 
@@ -61,6 +70,8 @@ public class ServiceService {
     public void delete(Long id) {
         ServiceEntity entity = findEntityById(id);
         serviceRepository.delete(entity);
+
+        activityLogService.logCurrentAction("DELETE", "Xóa dịch vụ ID: " + id);
     }
 
     @Transactional(readOnly = true)

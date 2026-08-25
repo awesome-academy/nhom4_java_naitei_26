@@ -15,6 +15,8 @@ import nhom4.public_service_management_system.user.dto.UserForm;
 import nhom4.public_service_management_system.user.dto.UserProfileResponse;
 import nhom4.public_service_management_system.user.dto.UserRequest;
 import nhom4.public_service_management_system.user.dto.UserResponse;
+import nhom4.public_service_management_system.activity_log.ActivityLogService;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -35,18 +37,21 @@ public class UserService {
     private final StaffRepository staffRepository;
     private final UserMapper userMapper;
     private final ApplicationMapper applicationMapper;
+    private final ActivityLogService activityLogService;
 
     public UserService(
             UserRepository userRepository,
             CitizenRepository citizenRepository,
             StaffRepository staffRepository,
             UserMapper userMapper,
-            ApplicationMapper applicationMapper) {
+            ApplicationMapper applicationMapper,
+            ActivityLogService activityLogService) {
         this.userRepository = userRepository;
         this.citizenRepository = citizenRepository;
         this.staffRepository = staffRepository;
         this.userMapper = userMapper;
         this.applicationMapper = applicationMapper;
+        this.activityLogService = activityLogService;
     }
 
     public UserResponse create(UserRequest request) {
@@ -55,6 +60,9 @@ public class UserService {
         }
         UserEntity entity = userMapper.toEntity(request);
         UserEntity saved = userRepository.save(entity);
+
+        activityLogService.logCurrentAction("CREATE", "Tạo tài khoản mới: " + request.email());
+
         return userMapper.toResponse(saved);
     }
 
@@ -69,6 +77,9 @@ public class UserService {
 
         userMapper.updateEntity(entity, request);
         UserEntity saved = userRepository.save(entity);
+
+        activityLogService.logCurrentAction("UPDATE", "Cập nhật tài khoản ID: " + id);
+
         return userMapper.toResponse(saved);
     }
 
@@ -85,6 +96,9 @@ public class UserService {
         UserEntity entity = userMapper.toEntity(form.toRequest());
         UserEntity saved = userRepository.save(entity);
         saveProfile(saved.getId(), form);
+
+        activityLogService.logCurrentAction("CREATE", "Tạo tài khoản và hồ sơ cho: " + form.getEmail());
+
         return toProfileResponse(saved, getDisplayId(saved.getId()));
     }
 
@@ -110,6 +124,8 @@ public class UserService {
             updateProfile(id, form);
         }
 
+        activityLogService.logCurrentAction("UPDATE", "Cập nhật hồ sơ tài khoản ID: " + id);
+
         return toProfileResponse(saved, getDisplayId(id));
     }
 
@@ -125,7 +141,7 @@ public class UserService {
             throw new ResourceNotFoundException("Khong tim thay user voi id: " + id);
         }
         return userRepository.countByIdGreaterThanAndRoleInAndStatusNot(
-            id, MANAGED_ROLES, UserStatus.DELETED) + 1;
+                id, MANAGED_ROLES, UserStatus.DELETED) + 1;
     }
 
     @Transactional(readOnly = true)
@@ -151,7 +167,7 @@ public class UserService {
             return findAll(pageable);
         }
         return userRepository.findByRoleAndStatusNot(role, UserStatus.DELETED, pageable)
-            .map(userMapper::toResponse);
+                .map(userMapper::toResponse);
     }
 
     @Transactional(readOnly = true)
@@ -175,6 +191,9 @@ public class UserService {
                 .orElseThrow(() -> new ResourceNotFoundException("Khong tim thay user voi id: " + id));
         entity.setStatus(UserStatus.LOCKED);
         UserEntity saved = userRepository.save(entity);
+
+        activityLogService.logCurrentAction("UPDATE", "Khóa tài khoản ID: " + id);
+
         return userMapper.toResponse(saved);
     }
 
@@ -191,6 +210,8 @@ public class UserService {
                 .orElseThrow(() -> new ResourceNotFoundException("Khong tim thay user voi id: " + id));
         entity.setStatus(UserStatus.DELETED);
         userRepository.save(entity);
+
+        activityLogService.logCurrentAction("DELETE", "Xóa tài khoản ID: " + id);
     }
 
     private UserEntity findEntityOrThrow(Long id) {
@@ -209,7 +230,7 @@ public class UserService {
                 Sort.by("id").descending()
         );
         Page<UserEntity> users = userRepository.findByRoleInAndStatusNot(
-            MANAGED_ROLES, UserStatus.DELETED, pageable);
+                MANAGED_ROLES, UserStatus.DELETED, pageable);
         if (users.isEmpty()) {
             throw new ResourceNotFoundException("Khong tim thay user voi id hien thi: " + displayId);
         }
@@ -326,8 +347,8 @@ public class UserService {
 
         if (user.getRole() == UserRole.ROLE_STAFF) {
             return staffRepository.findByUserId(user.getId())
-                        .map(staff -> new ProfileData(staff.getName(), staff.getPhone(), staff.getAddress(),
-                                null, null, null, java.util.List.of()))
+                    .map(staff -> new ProfileData(staff.getName(), staff.getPhone(), staff.getAddress(),
+                            null, null, null, java.util.List.of()))
                     .orElse(ProfileData.empty());
         }
 

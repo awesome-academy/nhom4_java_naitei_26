@@ -37,6 +37,9 @@ import nhom4.public_service_management_system.user.dto.UserResponse;
 class UserServiceTest {
 
     @Mock
+    private nhom4.public_service_management_system.activity_log.ActivityLogService activityLogService;
+
+    @Mock
     private UserRepository userRepository;
 
     @Mock
@@ -58,8 +61,9 @@ class UserServiceTest {
     void setUp() {
         lenient().when(passwordEncoder.encode(any())).thenAnswer(invocation -> invocation.getArgument(0));
         userMapper = new UserMapper(passwordEncoder);
+
         userService = new UserService(userRepository, citizenRepository, staffRepository,
-            userMapper, new ApplicationMapper());
+                userMapper, new ApplicationMapper(), activityLogService);
 
         userEntity = new UserEntity();
         userEntity.setId(1L);

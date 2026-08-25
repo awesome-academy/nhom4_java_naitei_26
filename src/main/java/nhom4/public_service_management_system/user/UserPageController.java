@@ -27,7 +27,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @RequestMapping("/admin/users")
 public class UserPageController {
 
-    private static final List<UserRole> MANAGED_ROLES = List.of(UserRole.ROLE_CITIZEN, UserRole.ROLE_STAFF, UserRole.ROLE_CITIZEN);
+    private static final List<UserRole> MANAGED_ROLES = List.of(UserRole.ROLE_CITIZEN, UserRole.ROLE_STAFF);
 
     private final UserService userService;
 

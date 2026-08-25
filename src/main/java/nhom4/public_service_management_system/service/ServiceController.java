@@ -47,7 +47,7 @@ public class ServiceController {
         return ResponseEntity.ok(serviceService.update(id, request));
     }
 
-    @DeleteMapping("/{id")
+    @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         serviceService.delete(id);
         return ResponseEntity.noContent().build();

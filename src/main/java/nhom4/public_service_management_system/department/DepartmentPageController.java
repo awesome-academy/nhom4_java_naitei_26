@@ -40,6 +40,7 @@ public class DepartmentPageController {
 
     @InitBinder("departmentForm")
     public void initBinder(WebDataBinder binder) {
+        // Cho phép "leaderStaffId" nhận chuỗi rỗng (không chọn) mà không văng lỗi convert.
         binder.registerCustomEditor(Long.class, "leaderStaffId", new PropertyEditorSupport() {
             @Override
             public void setAsText(String text) {
@@ -85,7 +86,7 @@ public class DepartmentPageController {
 
         try {
             departmentService.create(departmentForm.toRequest());
-            redirectAttributes.addFlashAttribute("sucessMessage", "Đã tạo phòng ban mới.");
+            redirectAttributes.addFlashAttribute("successMessage", "Đã tạo phòng ban mới.");
             return "redirect:/admin/departments";
         } catch (DuplicateResourceException ex) {
             bindingResult.rejectValue("code", "duplicate", ex.getMessage());
@@ -122,7 +123,7 @@ public class DepartmentPageController {
 
         try {
             departmentService.update(id, departmentForm.toRequest());
-            redirectAttributes.addFlashAttribute("sucessMessage", "Đã cập nhật phòng ban.");
+            redirectAttributes.addFlashAttribute("successMessage", "Đã cập nhật phòng ban.");
             return "redirect:/admin/departments";
         } catch (DuplicateResourceException ex) {
             bindingResult.rejectValue("code", "duplicate", ex.getMessage());
@@ -148,5 +149,4 @@ public class DepartmentPageController {
         model.addAttribute("staffList", staffRepository.findAll());
         model.addAttribute("mode", mode);
     }
-
 }

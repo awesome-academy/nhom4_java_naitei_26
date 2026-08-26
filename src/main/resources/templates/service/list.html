@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1"/>
+        <title>Dịch vụ công - Public Service</title>
+        <link
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+            rel="stylesheet"
+        />
+        <link rel="stylesheet" th:href="@{css/style.css}" />
+    </head>
+
+    <body>
+        <div th:replace="~{fragments/header :: navbar}"></div>
+
+        <div class="d-flex">
+            <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+
+            <main class="main-content flex-grow-1">
+                <div class="container-fluid p-4">
+                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+                        <div>
+                            <h1 class="fw-bold mb-1">Dịch vụ công</h1>
+                            <p class="text-muted mb-0">Danh sách dịch vụ hành chính công.</p>
+                        </div>
+
+                        <a th:href="@{/admin/services/new}" class="btn btn-primary">
+                            Tạo mới
+                        </a>
+                    </div>
+
+                    <div
+                        th:if="${successMessage}"
+                        class="alert alert-success alert-dismissible fade show"
+                        role="alert"
+                    >
+                        <span th:text="${successMessage}"></span>
+                        <button
+                            type="button"
+                            class="btn-close"
+                            data-bs-dismiss="alert"
+                            aria-label="Close"
+                        ></button>
+                    </div>
+                    <div
+                        th:if="${errorMessage}"
+                        class="alert alert-danger alert-dismissible fade show"
+                        role="alert"
+                    >
+                        <span th:text="${errorMessage}"></span>
+                        <button
+                            type="button"
+                            class="btn-close"
+                            data-bs-dismiss="alert"
+                            aria-label="Close"
+                        ></button>
+                    </div>
+
+                    <div class="card dashboard-card mb-4">
+                        <div class="card-body">
+                            <form
+                                class="row g-3 align-items-end"
+                                method="get"
+                                th:action="@{/admin/services}"
+                            >
+                                <div class="col-md-4 col-lg-3">
+                                    <label class="form-label" for="name">Tìm theo tên</label>
+                                    <input
+                                        class="form-control"
+                                        id="name"
+                                        type="text"
+                                        name="name"
+                                        th:value="${keyword}"
+                                        placeholder="Nhập tên dịch vụ..."
+                                    />
+                                </div>
+
+                                <div class="col-md-auto">
+                                    <button type="submit" class="btn btn-outline-primary">
+                                        Tìm kiếm
+                                    </button>
+                                    <a
+                                        th:href="@{/admin/services}"
+                                        class="btn btn-outline-secondary ms-2"
+                                    >Reset</a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="card dashboard-card">
+                        <div class="table-responsive">
+                            <table class="table align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th scope="col">ID</th>
+                                        <th scope="col">Tên dịch vụ</th>
+                                        <th scope="col">Mã</th>
+                                        <th scope="col">Phòng ban phụ trách</th>
+                                        <th scope="col">Thời gian xử lý</th>
+                                        <th scope="col">Lệ phí</th>
+                                        <th scope="col" class="text-end">Hành động</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="service : ${services.content}">
+                                        <td th:text="${service.id()}"></td>
+                                        <td>
+                                            <a
+                                                class="fw-semibold text-decoration-none"
+                                                th:href="@{/admin/services/{id}(id=${service.id()})}"
+                                                th:text="${service.name()}"
+                                            ></a>
+                                        </td>
+                                        <td th:text="${service.code()}"></td>
+                                        <td>
+                                            <span th:if="${service.departmentName() != null}" th:text="${service.departmentName()}"></span>
+                                            <span th:if="${service.departmentName() == null}" class="text-muted">Chưa gán</span>
+                                        </td>
+                                        <td>
+                                            <span th:if="${service.processingTime() != null}" th:text="${service.processingTime()} + ' ngày'"></span>
+                                            <span th:if="${service.processingTime() == null}" class="text-muted">--</span>
+                                        </td>
+                                        <td>
+                                            <span
+                                                th:if="${service.fee() != null}"
+                                                th:text="${#numbers.formatDecimal(service.fee(), 0, 'COMMA', 0, 'POINT')} + ' d'"
+                                            ></span>
+                                            <span th:if="${service.fee() == null}" class="text-muted">Miễn phí</span>
+                                        </td>
+                                        <td class="text-end">
+                                            <div class="d-flex gap-2 justify-content-end">
+                                                <a
+                                                    class="btn btn-sm btn-outline-secondary"
+                                                    th:href="@{/admin/services/{id}/edit(id=${service.id()})}"
+                                                >
+                                                    Sửa
+                                                </a>
+                                                <form
+                                                    method="post"
+                                                    th:action="@{/admin/services/{id}/delete(id=${service.id()})}"
+                                                    onsubmit="return confirm('Xóa dịch vụ này? Hành đồn này không thể hoàn tác');"
+                                                >
+                                                    <button
+                                                        type="submit"
+                                                        class="btn btn-sm btn-outline-danger"
+                                                    >
+                                                        Xóa
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr th:if="${services.isEmpty()}">
+                                        <td colspan="7" class="text-center text-muted py-4">
+                                            Không tìm thấy dịch vụ nào
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <nav
+                        th:if="${services.totalPages > 1}"
+                        class="mt-4"
+                        aria-label="Service pagination"
+                    >
+                        <ul class="pagination mb-0">
+                            <li
+                                class="page-item"
+                                th:classappend="${services.first} ? ' disabled'"
+                            >
+                                <a
+                                    class="page-link"
+                                    th:href="@{/admin/services(page=${services.number -1}, size=${services.size}, name=${keyword})}"
+                                >
+                                    Previous
+                                </a>
+                            </li>
+
+                            <li
+                                class="page-item"
+                                th:each="pageNumber : ${#numbers.sequence(0, services.totalPages - 1)}"
+                                th:classappend="${pageNumber == services.number} ? ' active'"
+                            >
+                                <a
+                                    class="page-link"
+                                    th:href="@{/admin/services(page=${pageNumber}, size=${services.size}, name=${keyword})}"
+                                    th:text="${pageNumber + 1}"
+                                >
+                                </a>
+                            </li>
+
+                            <li
+                                class="page-item"
+                                th:classappend="${services.last} ? ' disabled'"
+                            >
+                                <a
+                                    class="page-link"
+                                    th:href="@{/admin/services(page=${services.number + 1}, size=${services.size}, name=${keyword})}"
+                                >
+                                    Next
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </main>
+        </div>
+
+        <div th:replace="~{frafments/footer :: footer}"></div>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    </body>
+</html>

@@ -1,0 +1,16 @@
+﻿email,password,name,phone,address,departmentId
+staff01@example.com,Password@123,Nguyen Van Thanh,0901000001,"12 Tran Phu, Ha Noi",1
+staff02@example.com,Password@123,Tran Thi Huong,0901000002,"25 Le Loi, Da Nang",1
+staff03@example.com,Password@123,Le Van Nam,0901000003,"36 Nguyen Hue, Ho Chi Minh City",1
+staff04@example.com,Password@123,Pham Thi Mai,0901000004,"48 Bach Dang, Hai Phong",2
+staff05@example.com,Password@123,Hoang Van Long,0901000005,"59 Ly Thuong Kiet, Ha Noi",2
+staff06@example.com,Password@123,Vo Thi Lan,0901000006,"71 Hung Vuong, Hue",3
+staff07@example.com,Password@123,Dang Van Hung,0901000007,"83 Nguyen Van Linh, Da Nang",4
+staff08@example.com,Password@123,Bui Thi Ngoc,0901000008,"94 Pham Van Dong, Can Tho",5
+staff09@example.com,Password@123,Do Van Kien,0901000009,"105 Vo Thi Sau, Ho Chi Minh City",1
+staff10@example.com,Password@123,Nguyen Thi Phuong,0901000010,"116 Hoang Dieu, Ha Noi",2
+staff11@example.com,Password@123,Tran Van Duc,0901000011,"18 Dien Bien Phu, Ha Noi",6
+staff12@example.com,Password@123,Le Thi Thao,0901000012,"29 Nguyen Trai, Da Nang",7
+staff13@example.com,Password@123,Pham Van Son,0901000013,"40 Cach Mang Thang Tam, Can Tho",8
+staff14@example.com,Password@123,Hoang Thi Yen,0901000014,"51 Nguyen Tat Thanh, Hue",9
+staff15@example.com,Password@123,Bui Van Tuan,0901000015,"62 Giang Vo, Ha Noi",10

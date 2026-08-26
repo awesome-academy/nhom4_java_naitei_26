@@ -1,5 +1,6 @@
 package nhom4.public_service_management_system.application_document;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -18,6 +19,7 @@ public class ApplicationDocumentEntity {
 
     @ManyToOne
     @JoinColumn(name = "application_id")
+    @JsonIgnore
     private ApplicationEntity application;
 
     private DocumentType documentType;

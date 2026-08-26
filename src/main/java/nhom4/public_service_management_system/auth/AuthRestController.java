@@ -2,6 +2,7 @@ package nhom4.public_service_management_system.auth;
 
 import java.util.Map;
 
+import nhom4.public_service_management_system.activity_log.ActivityLogService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -30,10 +31,13 @@ public class AuthRestController {
     private final AuthService authService;
     private final AuthenticationManager authenticationManager;
     private final SecurityContextRepository securityContextRepository = new HttpSessionSecurityContextRepository();
+    private final ActivityLogService activityLogService;
 
-    public AuthRestController(AuthService authService, AuthenticationManager authenticationManager) {
+    public AuthRestController(AuthService authService, AuthenticationManager authenticationManager,
+                              ActivityLogService activityLogService) {
         this.authService = authService;
         this.authenticationManager = authenticationManager;
+        this.activityLogService = activityLogService;
     }
 
     @PostMapping("/register")
@@ -62,7 +66,7 @@ public class AuthRestController {
             context.setAuthentication(authenticationResponse);
             SecurityContextHolder.setContext(context);
             securityContextRepository.saveContext(context, httpRequest, httpResponse);
-
+            activityLogService.logCurrentAction("LOGIN", "Người dùng đăng nhập: " + request.email());
             return ResponseEntity.ok(Map.of(
                     "message", "Đăng nhập thành công",
                     "status", HttpStatus.OK.value()
@@ -77,6 +81,12 @@ public class AuthRestController {
 
     @PostMapping("/logout")
     public ResponseEntity<?> logout(HttpServletRequest request) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+        activityLogService.logCurrentAction(
+                "LOGOUT",
+                "Người dùng đăng xuất: " + username
+        );
         request.getSession().invalidate();
         SecurityContextHolder.clearContext();
         return ResponseEntity.ok(Map.of(

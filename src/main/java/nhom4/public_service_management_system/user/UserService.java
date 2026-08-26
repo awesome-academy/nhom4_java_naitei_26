@@ -30,7 +30,7 @@ import org.springframework.util.StringUtils;
 @Transactional
 public class UserService {
 
-    private static final List<UserRole> MANAGED_ROLES = List.of(UserRole.ROLE_CITIZEN, UserRole.ROLE_STAFF);
+    private static final List<UserRole> MANAGED_ROLES = List.of(UserRole.ROLE_CITIZEN, UserRole.ROLE_STAFF, UserRole.ROLE_MANAGER);
 
     private final UserRepository userRepository;
     private final CitizenRepository citizenRepository;
@@ -239,7 +239,7 @@ public class UserService {
 
     private void validateManagedRole(UserRole role) {
         if (!MANAGED_ROLES.contains(role)) {
-            throw new IllegalArgumentException("Chi ho tro vai tro CITIZEN hoac STAFF");
+            throw new IllegalArgumentException("Chi ho tro vai tro CITIZEN, STAFF hoac MANAGER");
         }
     }
 
@@ -345,7 +345,7 @@ public class UserService {
                     .orElse(ProfileData.empty());
         }
 
-        if (user.getRole() == UserRole.ROLE_STAFF) {
+        if (user.getRole() == UserRole.ROLE_STAFF || user.getRole() == UserRole.ROLE_MANAGER) {
             return staffRepository.findByUserId(user.getId())
                     .map(staff -> new ProfileData(staff.getName(), staff.getPhone(), staff.getAddress(),
                             null, null, null, java.util.List.of()))

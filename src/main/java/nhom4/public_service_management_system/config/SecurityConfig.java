@@ -60,6 +60,7 @@ public class SecurityConfig {
                 .logout(logout -> logout
                         .logoutUrl("/logout")
                         .logoutSuccessUrl("/login?logout")
+                        .addLogoutHandler(new org.springframework.security.web.authentication.logout.LogoutSuccessEventPublishingLogoutHandler())
                         .permitAll()
                 );
 

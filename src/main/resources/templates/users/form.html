@@ -103,6 +103,7 @@
                     <label class="form-label" for="status">Status</label>
                     <select
                       class="form-select"
+                      th:classappend="${#fields.hasErrors('status')} ? ' is-invalid'"
                       id="status"
                       th:field="*{status}"
                     >
@@ -112,6 +113,7 @@
                         th:text="${status}"
                       ></option>
                     </select>
+                    <div class="invalid-feedback" th:errors="*{status}"></div>
                   </div>
 
                   <div class="col-md-6">
@@ -132,6 +134,7 @@
                     >
                     <input
                       class="form-control"
+                      th:classappend="${#fields.hasErrors('dateOfBirth')} ? ' is-invalid'"
                       id="dateOfBirth"
                       type="date"
                       th:field="*{dateOfBirth}"
@@ -146,6 +149,7 @@
                     <label class="form-label" for="gender">Gender</label>
                     <select
                       class="form-select"
+                      th:classappend="${#fields.hasErrors('gender')} ? ' is-invalid'"
                       id="gender"
                       th:field="*{gender}"
                     >
@@ -153,6 +157,7 @@
                       <option value="MALE">Male</option>
                       <option value="FEMALE">Female</option>
                     </select>
+                    <div class="invalid-feedback" th:errors="*{gender}"></div>
                   </div>
 
                   <div class="col-md-6">
@@ -161,6 +166,7 @@
                     >
                     <input
                       class="form-control"
+                      th:classappend="${#fields.hasErrors('identityNumber')} ? ' is-invalid'"
                       id="identityNumber"
                       type="text"
                       inputmode="numeric"

@@ -1,6 +1,7 @@
 package nhom4.public_service_management_system.department;
 
 import java.beans.PropertyEditorSupport;
+import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -24,6 +25,7 @@ import nhom4.public_service_management_system.department.dto.DepartmentForm;
 import nhom4.public_service_management_system.department.dto.DepartmentResponse;
 import nhom4.public_service_management_system.exception.DuplicateResourceException;
 import nhom4.public_service_management_system.exception.ResourceNotFoundException;
+import nhom4.public_service_management_system.staff.StaffEntity;
 import nhom4.public_service_management_system.staff.StaffRepository;
 
 @Controller
@@ -64,10 +66,19 @@ public class DepartmentPageController {
         return "departments/list";
     }
 
+    @GetMapping("/{id}")
+    public String detail(@PathVariable Long id, Model model) {
+        DepartmentResponse department = departmentService.getById(id);
+        List<StaffEntity> staffList = staffRepository.findByDepartmentId(id);
+        model.addAttribute("department", department);
+        model.addAttribute("staffList", staffList);
+        return "departments/detail";
+    }
+
     @GetMapping("/new")
     public String createForm(Model model) {
         model.addAttribute("departmentForm", new DepartmentForm());
-        model.addAttribute("staffList", staffRepository.findAll());
+        model.addAttribute("staffList", staffRepository.findByDepartmentIdIsNull());
         model.addAttribute("mode", "create");
         return "departments/form";
     }
@@ -79,7 +90,7 @@ public class DepartmentPageController {
             Model model,
             RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
-            prepareFormModel(model, "create");
+            prepareFormModel(model, "create", null);
             return "departments/form";
         }
 
@@ -89,11 +100,11 @@ public class DepartmentPageController {
             return "redirect:/admin/departments";
         } catch (DuplicateResourceException ex) {
             bindingResult.rejectValue("code", "duplicate", ex.getMessage());
-            prepareFormModel(model, "create");
+            prepareFormModel(model, "create", null);
             return "departments/form";
         } catch (ResourceNotFoundException ex) {
             bindingResult.rejectValue("leaderStaffId", "invalid", ex.getMessage());
-            prepareFormModel(model, "create");
+            prepareFormModel(model, "create", null);
             return "departments/form";
         }
     }
@@ -102,7 +113,7 @@ public class DepartmentPageController {
     public String editForm(@PathVariable Long id, Model model) {
         model.addAttribute("departmentId", id);
         model.addAttribute("departmentForm", DepartmentForm.from(departmentService.getById(id)));
-        model.addAttribute("staffList", staffRepository.findAll());
+        model.addAttribute("staffList", staffRepository.findByDepartmentId(id));
         model.addAttribute("mode", "edit");
         return "departments/form";
     }
@@ -116,7 +127,7 @@ public class DepartmentPageController {
             RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
             model.addAttribute("departmentId", id);
-            prepareFormModel(model, "edit");
+            prepareFormModel(model, "edit", id);
             return "departments/form";
         }
 
@@ -127,12 +138,12 @@ public class DepartmentPageController {
         } catch (DuplicateResourceException ex) {
             bindingResult.rejectValue("code", "duplicate", ex.getMessage());
             model.addAttribute("departmentId", id);
-            prepareFormModel(model, "edit");
+            prepareFormModel(model, "edit", id);
             return "departments/form";
         } catch (ResourceNotFoundException ex) {
             bindingResult.rejectValue("leaderStaffId", "invalid", ex.getMessage());
             model.addAttribute("departmentId", id);
-            prepareFormModel(model, "edit");
+            prepareFormModel(model, "edit", id);
             return "departments/form";
         }
     }
@@ -144,9 +155,13 @@ public class DepartmentPageController {
         return "redirect:/admin/departments";
     }
 
-    private void prepareFormModel(Model model, String mode) {
-        model.addAttribute("staffList", staffRepository.findAll());
+    private void prepareFormModel(Model model, String mode, Long departmentId) {
+        if (departmentId != null) {
+            model.addAttribute("staffList", staffRepository.findByDepartmentId(departmentId));
+        } else {
+            model.addAttribute("staffList", staffRepository.findByDepartmentIdIsNull());
+        }
         model.addAttribute("mode", mode);
     }
 
-}
+}

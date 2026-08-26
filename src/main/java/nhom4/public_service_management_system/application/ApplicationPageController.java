@@ -1,16 +1,25 @@
 package nhom4.public_service_management_system.application;
 
+import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import jakarta.validation.Valid;
 import nhom4.public_service_management_system.application.dto.ApplicationForm;
 import nhom4.public_service_management_system.application.dto.ApplicationResponse;
+import nhom4.public_service_management_system.application_document.ApplicationDocumentService;
 import nhom4.public_service_management_system.application_document.ApplicationDocumentRepository;
 import nhom4.public_service_management_system.application_history.ApplicationHistoryRepository;
 import nhom4.public_service_management_system.auth.CustomUserDetails;
 import nhom4.public_service_management_system.citizen.CitizenRepository;
 import nhom4.public_service_management_system.enums.ApplicationStatus;
+import nhom4.public_service_management_system.enums.DocumentType;
 import nhom4.public_service_management_system.exception.ResourceNotFoundException;
 import nhom4.public_service_management_system.service.ServiceEntity;
 import nhom4.public_service_management_system.service.ServiceRepository;
+import nhom4.public_service_management_system.staff.StaffEntity;
 import nhom4.public_service_management_system.staff.StaffRepository;
 import nhom4.public_service_management_system.user.UserEntity;
 import nhom4.public_service_management_system.user.UserRepository;
@@ -20,12 +29,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
@@ -37,6 +48,7 @@ public class ApplicationPageController {
     private final ServiceRepository serviceRepository;
     private final StaffRepository staffRepository;
     private final ApplicationDocumentRepository applicationDocumentRepository;
+    private final ApplicationDocumentService applicationDocumentService;
     private final ApplicationHistoryRepository applicationHistoryRepository;
     private final UserRepository userRepository;
 
@@ -47,6 +59,7 @@ public class ApplicationPageController {
             ServiceRepository serviceRepository,
             StaffRepository staffRepository,
             ApplicationDocumentRepository applicationDocumentRepository,
+            ApplicationDocumentService applicationDocumentService,
             ApplicationHistoryRepository applicationHistoryRepository,
             UserRepository userRepository) {
         this.applicationService = applicationService;
@@ -54,6 +67,7 @@ public class ApplicationPageController {
         this.serviceRepository = serviceRepository;
         this.staffRepository = staffRepository;
         this.applicationDocumentRepository = applicationDocumentRepository;
+        this.applicationDocumentService = applicationDocumentService;
         this.applicationHistoryRepository = applicationHistoryRepository;
         this.userRepository = userRepository;
     }
@@ -63,6 +77,25 @@ public class ApplicationPageController {
         binder.registerCustomEditor(Long.class, "citizenId", new CustomNumberEditor(Long.class, true));
         binder.registerCustomEditor(Long.class, "serviceId", new CustomNumberEditor(Long.class, true));
         binder.registerCustomEditor(Long.class, "assignedStaffId", new CustomNumberEditor(Long.class, true));
+    }
+
+    // --- REST API: Lấy danh sách nhân viên theo serviceId ---
+    @GetMapping("/api/services/{serviceId}/staff")
+    @ResponseBody
+    public ResponseEntity<List<Map<String, Object>>> getStaffByService(@PathVariable Long serviceId) {
+        ServiceEntity service = serviceRepository.findById(serviceId).orElse(null);
+        if (service == null || service.getDepartment() == null) {
+            return ResponseEntity.ok(Collections.emptyList());
+        }
+        List<StaffEntity> staffList = staffRepository.findByDepartmentId(service.getDepartment().getId());
+        List<Map<String, Object>> result = staffList.stream()
+                .map(s -> Map.<String, Object>of(
+                        "id", s.getId(),
+                        "name", s.getName(),
+                        "phone", s.getPhone() != null ? s.getPhone() : ""
+                ))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(result);
     }
 
     @GetMapping
@@ -101,9 +134,13 @@ public class ApplicationPageController {
         model.addAttribute("applicationEntity", entity);
         model.addAttribute("citizen", entity.getCitizen());
 
+        java.util.List<nhom4.public_service_management_system.staff.StaffEntity> staffList = java.util.Collections.emptyList();
         if (entity.getServiceId() != null) {
             ServiceEntity service = serviceRepository.findById(entity.getServiceId()).orElse(null);
             model.addAttribute("service", service);
+            if (service != null && service.getDepartment() != null) {
+                staffList = staffRepository.findByDepartmentId(service.getDepartment().getId());
+            }
         }
 
         if (entity.getAssignedStaffId() != null) {
@@ -113,8 +150,7 @@ public class ApplicationPageController {
 
         model.addAttribute("documents", applicationDocumentRepository.findByApplicationId(id));
         model.addAttribute("histories", applicationHistoryRepository.findByApplicationIdOrderByChangedAtDesc(id));
-        model.addAttribute("staffList", staffRepository.findAll(Sort.by("name").ascending()));
-        model.addAttribute("statuses", ApplicationStatus.values());
+        model.addAttribute("staffList", staffList);
 
         return "applications/detail";
     }
@@ -130,6 +166,7 @@ public class ApplicationPageController {
     public String create(
             @Valid @ModelAttribute("applicationForm") ApplicationForm form,
             BindingResult bindingResult,
+            @RequestParam(value = "documentFile", required = false) MultipartFile documentFile,
             Model model,
             RedirectAttributes redirectAttributes) {
 
@@ -140,6 +177,12 @@ public class ApplicationPageController {
 
         try {
             ApplicationResponse created = applicationService.createFromForm(form);
+
+            // Upload document nếu có
+            if (documentFile != null && !documentFile.isEmpty()) {
+                applicationDocumentService.create(created.getId(), DocumentType.SUBMISSION, documentFile);
+            }
+
             redirectAttributes.addFlashAttribute("successMessage", "Tạo hồ sơ thành công với mã: " + created.getApplicationCode());
             return "redirect:/admin/applications/" + created.getId();
         } catch (ResourceNotFoundException ex) {
@@ -159,6 +202,7 @@ public class ApplicationPageController {
         model.addAttribute("applicationId", id);
         model.addAttribute("applicationForm", ApplicationForm.from(application));
         model.addAttribute("applicationCode", application.getApplicationCode());
+        model.addAttribute("documents", applicationDocumentRepository.findByApplicationId(id));
         prepareFormModel(model, "edit");
         return "applications/form";
     }
@@ -168,6 +212,7 @@ public class ApplicationPageController {
             @PathVariable Long id,
             @Valid @ModelAttribute("applicationForm") ApplicationForm form,
             BindingResult bindingResult,
+            @RequestParam(value = "documentFile", required = false) MultipartFile documentFile,
             Model model,
             RedirectAttributes redirectAttributes) {
 
@@ -179,6 +224,12 @@ public class ApplicationPageController {
 
         try {
             applicationService.update(id, form);
+
+            // Upload document nếu có
+            if (documentFile != null && !documentFile.isEmpty()) {
+                applicationDocumentService.create(id, DocumentType.RESPONSE, documentFile);
+            }
+
             redirectAttributes.addFlashAttribute("successMessage", "Cập nhật hồ sơ thành công.");
             return "redirect:/admin/applications/" + id;
         } catch (ResourceNotFoundException ex) {
@@ -238,8 +289,8 @@ public class ApplicationPageController {
     private void prepareFormModel(Model model, String mode) {
         model.addAttribute("citizens", citizenRepository.findAll(Sort.by("name").ascending()));
         model.addAttribute("services", serviceRepository.findAll(Sort.by("name").ascending()));
-        model.addAttribute("staffList", staffRepository.findAll(Sort.by("name").ascending()));
         model.addAttribute("statuses", ApplicationStatus.values());
         model.addAttribute("mode", mode);
     }
 }
+

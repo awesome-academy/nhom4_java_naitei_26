@@ -1,5 +1,6 @@
 package nhom4.public_service_management_system.staff;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
@@ -14,6 +15,10 @@ public interface StaffRepository extends JpaRepository<StaffEntity, Long> {
     Optional<StaffEntity> findByPhone(String phone);
 
     Page<StaffEntity> findByDepartmentId(Long departmentId, Pageable pageable);
+
+    List<StaffEntity> findByDepartmentId(Long departmentId);
+
+    List<StaffEntity> findByDepartmentIdIsNull();
 
     boolean existsByUserId(Long userId);
 

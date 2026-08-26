@@ -64,6 +64,7 @@
                 method="post"
                 th:object="${applicationForm}"
                 th:action="${mode == 'create'} ? @{/admin/applications} : @{/admin/applications/{id}(id=${applicationId})}"
+                enctype="multipart/form-data"
               >
                 <!-- Global form errors -->
                 <div
@@ -125,7 +126,7 @@
                     ></div>
                   </div>
 
-                  <!-- Staff Assignment -->
+                  <!-- Staff Assignment (loaded via AJAX) -->
                   <div class="col-md-6">
                     <label class="form-label fw-semibold" for="assignedStaffId"
                       >Cán bộ phụ trách xử lý</label
@@ -136,13 +137,9 @@
                       th:field="*{assignedStaffId}"
                       th:classappend="${#fields.hasErrors('assignedStaffId')} ? ' is-invalid'"
                     >
-                      <option value="">-- Chưa phân công (Để trống) --</option>
-                      <option
-                        th:each="st : ${staffList}"
-                        th:value="${st.id}"
-                        th:text="${st.name + (st.phone != null ? ' - SĐT: ' + st.phone : '')}"
-                      ></option>
+                      <option value="">-- Chọn dịch vụ trước --</option>
                     </select>
+                    <small class="text-muted">Danh sách cán bộ sẽ tải theo phòng ban phụ trách dịch vụ đã chọn.</small>
                     <div
                       class="invalid-feedback"
                       th:errors="*{assignedStaffId}"
@@ -183,8 +180,8 @@
                     ></textarea>
                   </div>
 
-                  <!-- Result Note (For Edit Mode or Approval) -->
-                  <div class="col-md-6" th:if="${mode == 'edit'}">
+                  <!-- Result Note (Only when status = APPROVED) -->
+                  <div class="col-md-6" id="resultNoteGroup" style="display: none;">
                     <label
                       class="form-label fw-semibold text-success"
                       for="resultNote"
@@ -201,8 +198,8 @@
                     ></textarea>
                   </div>
 
-                  <!-- Rejection Reason (For Edit Mode or Rejection) -->
-                  <div class="col-md-6" th:if="${mode == 'edit'}">
+                  <!-- Rejection Reason (Only when status = REJECTED) -->
+                  <div class="col-md-6" id="rejectionReasonGroup" style="display: none;">
                     <label
                       class="form-label fw-semibold text-danger"
                       for="rejectionReason"
@@ -216,6 +213,45 @@
                       th:field="*{rejectionReason}"
                       placeholder="Nhập lý do từ chối nếu không hợp lệ..."
                     ></textarea>
+                  </div>
+
+                  <!-- Document Upload -->
+                  <div class="col-12">
+                    <label class="form-label fw-semibold" for="documentFile">
+                      <i class="bi bi-paperclip me-1"></i> Tài liệu đính kèm
+                    </label>
+                    <input
+                      class="form-control"
+                      type="file"
+                      id="documentFile"
+                      name="documentFile"
+                    />
+                    <small class="text-muted">Chọn tệp để đính kèm vào hồ sơ (PDF, DOC, hình ảnh...).</small>
+                  </div>
+
+                  <!-- Existing documents (Edit Mode) -->
+                  <div class="col-12" th:if="${mode == 'edit' && documents != null && !documents.empty}">
+                    <label class="form-label fw-semibold">Tài liệu hiện có</label>
+                    <div class="list-group">
+                      <div
+                        th:each="doc : ${documents}"
+                        class="list-group-item d-flex justify-content-between align-items-center"
+                      >
+                        <div>
+                          <i class="bi bi-file-earmark me-1"></i>
+                          <span th:text="${doc.fileName}">file.pdf</span>
+                          <small class="text-muted ms-2" th:text="${'(' + doc.documentType + ')'}"></small>
+                        </div>
+                        <a
+                          th:if="${doc.fileUrl}"
+                          th:href="${doc.fileUrl}"
+                          target="_blank"
+                          class="btn btn-sm btn-outline-primary"
+                        >
+                          <i class="bi bi-download me-1"></i> Tải về
+                        </a>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
@@ -241,5 +277,63 @@
 
     <div th:replace="~{fragments/footer :: footer}"></div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script th:inline="javascript">
+      document.addEventListener('DOMContentLoaded', function () {
+        const serviceSelect = document.getElementById('serviceId');
+        const staffSelect = document.getElementById('assignedStaffId');
+        const statusSelect = document.getElementById('status');
+        const resultNoteGroup = document.getElementById('resultNoteGroup');
+        const rejectionReasonGroup = document.getElementById('rejectionReasonGroup');
+
+        // Lưu giá trị staff đã chọn trước đó (cho edit mode)
+        const previousStaffId = /*[[${applicationForm.assignedStaffId}]]*/ null;
+
+        // --- AJAX: Load staff theo dịch vụ ---
+        function loadStaffByService(serviceId, selectedStaffId) {
+          staffSelect.innerHTML = '<option value="">-- Đang tải... --</option>';
+          if (!serviceId) {
+            staffSelect.innerHTML = '<option value="">-- Chọn dịch vụ trước --</option>';
+            return;
+          }
+          fetch('/admin/applications/api/services/' + serviceId + '/staff')
+            .then(function(response) { return response.json(); })
+            .then(function(data) {
+              staffSelect.innerHTML = '<option value="">-- Chưa phân công (Để trống) --</option>';
+              data.forEach(function(s) {
+                var opt = document.createElement('option');
+                opt.value = s.id;
+                opt.textContent = s.name + (s.phone ? ' - SĐT: ' + s.phone : '');
+                if (selectedStaffId && s.id == selectedStaffId) {
+                  opt.selected = true;
+                }
+                staffSelect.appendChild(opt);
+              });
+            })
+            .catch(function() {
+              staffSelect.innerHTML = '<option value="">-- Lỗi tải danh sách --</option>';
+            });
+        }
+
+        serviceSelect.addEventListener('change', function () {
+          loadStaffByService(this.value, null);
+        });
+
+        // Load staff khi trang mở (cho edit mode hoặc khi đã chọn dịch vụ)
+        if (serviceSelect.value) {
+          loadStaffByService(serviceSelect.value, previousStaffId);
+        }
+
+        // --- Show/Hide resultNote & rejectionReason theo status ---
+        function toggleStatusFields() {
+          var status = statusSelect.value;
+          resultNoteGroup.style.display = (status === 'APPROVED') ? '' : 'none';
+          rejectionReasonGroup.style.display = (status === 'REJECTED') ? '' : 'none';
+        }
+
+        statusSelect.addEventListener('change', toggleStatusFields);
+        toggleStatusFields(); // Chạy lần đầu
+      });
+    </script>
   </body>
 </html>

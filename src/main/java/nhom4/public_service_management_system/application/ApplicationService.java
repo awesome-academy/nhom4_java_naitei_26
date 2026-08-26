@@ -9,6 +9,7 @@ import nhom4.public_service_management_system.citizen.CitizenEntity;
 import nhom4.public_service_management_system.citizen.CitizenRepository;
 import nhom4.public_service_management_system.enums.ApplicationStatus;
 import nhom4.public_service_management_system.exception.ResourceNotFoundException;
+import nhom4.public_service_management_system.notification.NotificationService;
 import nhom4.public_service_management_system.service.ServiceEntity;
 import nhom4.public_service_management_system.service.ServiceRepository;
 import nhom4.public_service_management_system.staff.StaffRepository;
@@ -48,6 +49,9 @@ public class ApplicationService {
     @Autowired
     private ActivityLogService activityLogService;
 
+    @Autowired
+    private NotificationService notificationService;
+
     @Transactional
     public ApplicationResponse create(ApplicationRequest request, Long userId) {
         ApplicationEntity entity = applicationMapper.toEntity(request);
@@ -63,6 +67,7 @@ public class ApplicationService {
 
         ApplicationEntity savedEntity = applicationRepository.save(entity);
 
+        notificationService.createNotification(userId, entity.getId(), "Công dân nộp hồ sơ mới ID: " + savedEntity.getId());
         activityLogService.logCurrentAction("CREATE", "Công dân nộp hồ sơ mới ID: " + savedEntity.getId());
 
         return applicationMapper.toResponse(savedEntity);
@@ -90,7 +95,7 @@ public class ApplicationService {
         }
 
         ApplicationEntity savedEntity = applicationRepository.save(entity);
-
+        notificationService.createNotification(citizen.getUserId(), entity.getId(), "Công dân nộp hồ sơ mới ID: " + savedEntity.getId());
         activityLogService.logCurrentAction("CREATE", "Nộp hồ sơ (từ form) ID: " + savedEntity.getId());
 
         return applicationMapper.toResponse(savedEntity);
@@ -137,7 +142,6 @@ public class ApplicationService {
         }
 
         ApplicationEntity updated = applicationRepository.save(entity);
-
         activityLogService.logCurrentAction("UPDATE", "Cập nhật hồ sơ ID: " + id);
 
         return applicationMapper.toResponse(updated);
@@ -179,6 +183,7 @@ public class ApplicationService {
         }
 
         ApplicationEntity updated = applicationRepository.save(entity);
+        notificationService.createNotification(updated.getCitizenId(), entity.getId(), "Công dân nộp hồ sơ mới ID: " + updated.getId());
 
         activityLogService.logCurrentAction("UPDATE_STATUS", "Cập nhật trạng thái hồ sơ ID: " + id + " thành " + newStatus);
 

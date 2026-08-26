@@ -14,6 +14,9 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import jakarta.validation.Valid;
 import nhom4.public_service_management_system.department.DepartmentRepository;
+import nhom4.public_service_management_system.exception.DuplicateResourceException;
+import nhom4.public_service_management_system.exception.ResourceNotFoundException;
+import nhom4.public_service_management_system.exception.ServiceInUseException;
 import nhom4.public_service_management_system.service.dto.ServiceRequest;
 import nhom4.public_service_management_system.service.dto.ServiceResponse;
 import nhom4.public_service_management_system.staff.StaffRepository;
@@ -72,9 +75,19 @@ public class ServicePageController {
             return "service/form";
         }
 
-        ServiceResponse created = serviceService.create(request);
-        redirectAttributes.addFlashAttribute("message", "Tạo dịch vụ thành công");
-        return "redirect:/admin/services/" + created.id();
+        try{
+            ServiceResponse created = serviceService.create(request);
+            redirectAttributes.addFlashAttribute("successMessage", "Tạo dịch vụ thành công");
+            return "redirect:/admin/services/" + created.id();
+        } catch (DuplicateResourceException ex) {
+            bindingResult.rejectValue("code", "duplicate", ex.getMessage());
+            addFormReferenceData(model);
+            return "service/form";
+        } catch (ResourceNotFoundException ex) {
+            bindingResult.rejectValue("departmentId", "invalid", ex.getMessage());
+            addFormReferenceData(model);
+            return "service/form";
+        }
     }
 
     @GetMapping("/{id}/edit")
@@ -106,15 +119,31 @@ public class ServicePageController {
             return "service/form";
         }
 
-        ServiceResponse updated = serviceService.update(id, request);
-        redirectAttributes.addFlashAttribute("message", "Cập nhật dịch vụ thành công");
-        return "redirect:/admin/services/" + updated.id();
+        try {
+            ServiceResponse updated = serviceService.update(id, request);
+            redirectAttributes.addFlashAttribute("successMessage", "Cập nhật dịch vụ thành công");
+            return "redirect:/admin/services/" + updated.id();
+        } catch (DuplicateResourceException ex) {
+            bindingResult.rejectValue("code", "duplicate", ex.getMessage());
+            model.addAttribute("serviceId", id);
+            addFormReferenceData(model);
+            return "service/form";
+        } catch (ResourceNotFoundException ex) {
+            bindingResult.rejectValue("departmentId", "invalid", ex.getMessage());
+            model.addAttribute("serviceId", id);
+            addFormReferenceData(model);
+            return "service/form";
+        }
     }
 
     @PostMapping("/{id}/delete")
     public String delete(@PathVariable Long id, RedirectAttributes redirectAttributes) {
-        serviceService.delete(id);
-        redirectAttributes.addFlashAttribute("message", "Đã xóa dịch vụ");
+        try {
+            serviceService.delete(id);
+            redirectAttributes.addFlashAttribute("successMessage", "Đã xóa dịch vụ");
+        } catch (ServiceInUseException ex) {
+            redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
+        }
         return "redirect:/admin/services";
     }
 

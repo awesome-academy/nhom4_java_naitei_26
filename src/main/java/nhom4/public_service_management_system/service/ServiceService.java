@@ -1,14 +1,19 @@
 package nhom4.public_service_management_system.service;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import nhom4.public_service_management_system.application.ApplicationRepository;
 import nhom4.public_service_management_system.department.DepartmentEntity;
 import nhom4.public_service_management_system.department.DepartmentRepository;
+import nhom4.public_service_management_system.enums.ApplicationStatus;
 import nhom4.public_service_management_system.exception.DuplicateResourceException;
 import nhom4.public_service_management_system.exception.ResourceNotFoundException;
+import nhom4.public_service_management_system.exception.ServiceInUseException;
 import nhom4.public_service_management_system.service.dto.ServiceRequest;
 import nhom4.public_service_management_system.service.dto.ServiceResponse;
 import nhom4.public_service_management_system.staff.StaffEntity;
@@ -17,15 +22,21 @@ import nhom4.public_service_management_system.activity_log.ActivityLogService;
 
 @Service
 public class ServiceService {
+
+    private static final List<ApplicationStatus> UNRESOLVED_STATUSES =
+            List.of(ApplicationStatus.RECEIVED, ApplicationStatus.PROCESSING);
+
     private final ServiceRepository serviceRepository;
     private final DepartmentRepository departmentRepository;
     private final StaffRepository staffRepository;
+    private final ApplicationRepository applicationRepository;
     private final ActivityLogService activityLogService;
 
-    public ServiceService(ServiceRepository serviceRepository, DepartmentRepository departmentRepository, StaffRepository staffRepository, ActivityLogService activityLogService) {
+    public ServiceService(ServiceRepository serviceRepository, DepartmentRepository departmentRepository, StaffRepository staffRepository, ApplicationRepository applicationRepository, ActivityLogService activityLogService) {
         this.serviceRepository = serviceRepository;
         this.departmentRepository = departmentRepository;
         this.staffRepository = staffRepository;
+        this.applicationRepository = applicationRepository;
         this.activityLogService = activityLogService;
     }
 
@@ -69,6 +80,12 @@ public class ServiceService {
     @Transactional
     public void delete(Long id) {
         ServiceEntity entity = findEntityById(id);
+
+        if (applicationRepository.existsByServiceIdAndStatusIn(id, UNRESOLVED_STATUSES)) {
+            throw new ServiceInUseException(
+                    "Không thể xóa dịch vụ '" + entity.getName() + "' vì đang có hồ sơ chưa xử lý xong");
+        }
+
         serviceRepository.delete(entity);
 
         activityLogService.logCurrentAction("DELETE", "Xóa dịch vụ ID: " + id);

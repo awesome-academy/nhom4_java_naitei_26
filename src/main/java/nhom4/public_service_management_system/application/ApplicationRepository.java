@@ -61,4 +61,6 @@ public interface ApplicationRepository extends JpaRepository<ApplicationEntity, 
     );
 
     long countByStatus(ApplicationStatus status);
+
+    boolean existsByServiceIdAndStatusIn(Long serviceId, List<ApplicationStatus> statuses);
 }

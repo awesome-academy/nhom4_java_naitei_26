@@ -54,15 +54,21 @@ public class NotificationService {
         NotificationEntity entity = new NotificationEntity(user, application, message);
         notificationRepository.save(entity);
 
-        sendMail(user.getEmail(), message);
+        // sendMail(user.getEmail(), message); // email disabled
     }
 
     private void sendMail(String toEmail, String message) {
         SimpleMailMessage mail = new SimpleMailMessage();
+        // mail.setFrom("phannthanh2005@gmail.com"); // Commented out to avoid SMTP auth issues
         mail.setTo(toEmail);
         mail.setSubject("Thông báo từ hệ thống dịch vụ công");
         mail.setText(message);
-        mailSender.send(mail);
+        try {
+            mailSender.send(mail);
+        } catch (org.springframework.mail.MailException ex) {
+            // Log the error but do not propagate to avoid breaking the transaction
+            System.err.println("Failed to send email notification: " + ex.getMessage());
+        }
     }
 
     private UserEntity findUserById(Long userId) {

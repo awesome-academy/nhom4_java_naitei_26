@@ -1,0 +1,11 @@
+﻿email,password,name,dateOfBirth,gender,identityNumber,address,phone
+citizen01@example.com,Password@123,Nguyen Van An,1998-03-15,MALE,001098001234,"12 Nguyen Trai, Ha Noi",0901234567
+citizen02@example.com,Password@123,Tran Thi Binh,1999-07-22,FEMALE,001099002345,"25 Le Loi, Da Nang",0912345678
+citizen03@example.com,Password@123,Le Van Cuong,1997-11-08,MALE,001097003456,"36 Tran Phu, Hai Phong",0923456789
+citizen04@example.com,Password@123,Pham Thi Dung,2000-01-30,FEMALE,001100004567,"48 Ba Trieu, Ha Noi",0934567890
+citizen05@example.com,Password@123,Hoang Van Em,1996-05-19,MALE,001096005678,"59 Nguyen Hue, Ho Chi Minh City",0945678901
+citizen06@example.com,Password@123,Vo Thi Giang,2001-09-12,FEMALE,001101006789,"71 Hai Ba Trung, Hue",0956789012
+citizen07@example.com,Password@123,Dang Van Hieu,1995-12-03,MALE,001095007890,"83 Phan Chu Trinh, Da Nang",0967890123
+citizen08@example.com,Password@123,Bui Thi Lan,1998-06-27,FEMALE,001098008901,"94 Quang Trung, Ha Noi",0978901234
+citizen09@example.com,Password@123,Do Van Minh,2002-02-14,MALE,001102009012,"105 Dien Bien Phu, Ho Chi Minh City",0989012345
+citizen10@example.com,Password@123,Nguyen Thi Nga,1997-10-06,FEMALE,001097010123,"116 Vo Thi Sau, Can Tho",0990123456

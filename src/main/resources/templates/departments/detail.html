@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Chi tiết phòng ban - Public Service</title>
+        <link
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+            rel="stylesheet"
+        />
+        <link rel="stylesheet" th:href="@{/css/style.css}" />
+    </head>
+
+    <body>
+        <div th:replace="~{fragments/header :: navbar}"></div>
+
+        <div class="d-flex">
+            <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+
+            <main class="main-content flex-grow-1">
+                <div class="container-fluid p-4">
+                    <div
+                        class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4"
+                    >
+                        <div>
+                            <h1 class="fw-bold mb-1">Chi tiết phòng ban</h1>
+                            <p class="text-muted mb-0">Thông tin chi tiết và danh sách nhân viên.</p>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <a
+                                class="btn btn-outline-secondary"
+                                th:href="@{/admin/departments}"
+                            >
+                                Quay lại
+                            </a>
+                            <a
+                                class="btn btn-primary"
+                                th:href="@{/admin/departments/{id}/edit(id=${department.id()})}"
+                            >
+                                Sửa
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="card dashboard-card mb-4">
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">Tên phòng ban</label>
+                                    <p class="mb-0" th:text="${department.name()}">—</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">Mã phòng ban</label>
+                                    <p class="mb-0" th:text="${department.code()}">—</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">Trưởng phòng</label>
+                                    <p class="mb-0">
+                                        <span th:if="${department.leaderStaffName() != null}" th:text="${department.leaderStaffName()}"></span>
+                                        <span th:if="${department.leaderStaffName() == null}" class="text-muted">Chưa có</span>
+                                    </p>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label fw-semibold">Địa chỉ</label>
+                                    <p class="mb-0">
+                                        <span th:if="${department.address() != null}" th:text="${department.address()}"></span>
+                                        <span th:if="${department.address() == null}" class="text-muted">Chưa có</span>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card dashboard-card">
+                        <div class="card-header bg-white">
+                            <h5 class="mb-0 fw-semibold">Danh sách nhân viên</h5>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th scope="col">ID</th>
+                                        <th scope="col">Tên nhân viên</th>
+                                        <th scope="col">Số điện thoại</th>
+                                        <th scope="col">Địa chỉ</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="staff : ${staffList}">
+                                        <td th:text="${staff.id}"></td>
+                                        <td class="fw-semibold" th:text="${staff.name}"></td>
+                                        <td>
+                                            <span th:if="${staff.phone != null}" th:text="${staff.phone}"></span>
+                                            <span th:if="${staff.phone == null}" class="text-muted">—</span>
+                                        </td>
+                                        <td>
+                                            <span th:if="${staff.address != null}" th:text="${staff.address}"></span>
+                                            <span th:if="${staff.address == null}" class="text-muted">—</span>
+                                        </td>
+                                    </tr>
+                                    <tr th:if="${#lists.isEmpty(staffList)}">
+                                        <td colspan="4" class="text-center text-muted py-4">
+                                            Không có nhân viên nào thuộc phòng ban này
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <div th:replace="~{fragments/footer :: footer}"></div>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    </body>
+</html>

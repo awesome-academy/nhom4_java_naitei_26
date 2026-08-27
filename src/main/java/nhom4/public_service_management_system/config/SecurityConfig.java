@@ -24,8 +24,9 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.ignoringRequestMatchers("/api/**"))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/login", "/api/register", "/api/login", "/css/**", "/js/**", "/images/**", "/error").permitAll()
-                        .requestMatchers("/api/admin/**").hasRole("SUPER_ADMIN")
+                        .requestMatchers("/admin/**").hasRole("SUPER_ADMIN")
                         .requestMatchers("/api/manager/**").hasRole("MANAGER")
+                        .requestMatchers("/api/staff/**").hasRole("STAFF")
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(exceptions -> exceptions

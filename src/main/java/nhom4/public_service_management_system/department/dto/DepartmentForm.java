@@ -24,7 +24,6 @@ public class DepartmentForm {
     @Size(max = 1000, message = "Địa chỉ tối đa 1000 ký tự")
     private String address;
 
-    @NotNull(message = "Vui lòng chọn trưởng phòng ban")
     private Long leaderStaffId;
 
 

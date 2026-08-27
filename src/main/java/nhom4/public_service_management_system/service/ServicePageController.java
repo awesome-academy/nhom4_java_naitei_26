@@ -40,7 +40,7 @@ public class ServicePageController {
 
     @GetMapping
     public String list(@RequestParam(required = false) String name,
-                       Pageable pageable,
+                       @org.springframework.data.web.PageableDefault(size = 5, sort = "id") Pageable pageable,
                        Model model) {
         Page<ServiceResponse> page = (name == null || name.isBlank())
                 ? serviceService.getAll(pageable)

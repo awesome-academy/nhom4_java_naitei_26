@@ -1,0 +1,6 @@
+﻿email,password,name,phone,address,departmentId
+staff16@example.com,Password@123,Nguyen Thi Hoa,0901000016,"73 Tran Phu, Ha Noi",1
+staff17@example.com,Password@123,Pham Van Hung,0901000017,"84 Le Loi, Da Nang",3
+staff18@example.com,Password@123,Tran Thi Ngoc,0901000018,"95 Nguyen Hue, Ho Chi Minh City",4
+staff19@example.com,Password@123,Le Van Phat,0901000019,"106 Bach Dang, Hai Phong",5
+staff20@example.com,Password@123,Vo Thi Hanh,0901000020,"117 Hung Vuong, Hue",10

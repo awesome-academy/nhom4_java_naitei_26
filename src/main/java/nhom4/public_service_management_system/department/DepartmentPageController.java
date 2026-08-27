@@ -78,7 +78,6 @@ public class DepartmentPageController {
     @GetMapping("/new")
     public String createForm(Model model) {
         model.addAttribute("departmentForm", new DepartmentForm());
-        model.addAttribute("staffList", staffRepository.findByDepartmentIdIsNull());
         model.addAttribute("mode", "create");
         return "departments/form";
     }
@@ -158,8 +157,6 @@ public class DepartmentPageController {
     private void prepareFormModel(Model model, String mode, Long departmentId) {
         if (departmentId != null) {
             model.addAttribute("staffList", staffRepository.findByDepartmentId(departmentId));
-        } else {
-            model.addAttribute("staffList", staffRepository.findByDepartmentIdIsNull());
         }
         model.addAttribute("mode", mode);
     }

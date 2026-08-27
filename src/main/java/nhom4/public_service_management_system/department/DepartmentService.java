@@ -32,14 +32,19 @@ public class DepartmentService {
             throw new DuplicateResourceException(
                     "Mã phòng ban '" + request.code() + "' đã tồn tại");
         }
-        StaffEntity leader = staffRepository.findById(request.leaderStaffId())
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Không tìm thấy staff id = " + request.leaderStaffId()));
+        StaffEntity leader = null;
+        if (request.leaderStaffId() != null) {
+            leader = staffRepository.findById(request.leaderStaffId())
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            "Không tìm thấy staff id = " + request.leaderStaffId()));
+        }
 
         DepartmentEntity entity = DepartmentMapper.toEntity(request, leader);
         DepartmentEntity saved = departmentRepository.save(entity);
 
-        leader.setDepartmentId(saved.getId());
+        if (leader != null) {
+            leader.setDepartmentId(saved.getId());
+        }
 
         // Ghi Log
         activityLogService.logCurrentAction("CREATE", "Tạo mới phòng ban: " + request.name());
@@ -55,9 +60,12 @@ public class DepartmentService {
             throw new DuplicateResourceException(
                     "Mã phòng ban '" + request.code() + "' đã được dùng bởi phòng ban khác");
         }
-        StaffEntity leader = staffRepository.findById(request.leaderStaffId())
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Không tìm thấy staff id = " + request.leaderStaffId()));
+        StaffEntity leader = null;
+        if (request.leaderStaffId() != null) {
+            leader = staffRepository.findById(request.leaderStaffId())
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            "Không tìm thấy staff id = " + request.leaderStaffId()));
+        }
 
         DepartmentMapper.updateEntityFromRequest(entity, request, leader);
 

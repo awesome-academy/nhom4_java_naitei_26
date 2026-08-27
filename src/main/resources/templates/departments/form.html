@@ -59,7 +59,7 @@
                                         <div class="invalid-feedback" th:errors="*{code}"></div>
                                     </div>
 
-                                    <div class="col-md-6">
+                                    <div class="col-md-6" th:if="${mode == 'edit'}">
                                         <label class="form-label" for="leaderStaffId">Trưởng phòng ban</label>
                                         <select
                                             class="form-select"
